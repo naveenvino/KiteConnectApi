@@ -1,0 +1,14 @@
+2025-07-06 18:23:39.332 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-06 18:23:39.444 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-06 18:23:39.638 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-06 18:23:39.644 +05:30 [INF] Hosting environment: Development
+2025-07-06 18:23:39.651 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-06 18:23:40.995 +05:30 [INF] HTTP GET /swagger/index.html responded 200 in 148.5719 ms
+2025-07-06 18:23:41.293 +05:30 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 24.2619 ms
+2025-07-06 18:33:09.955 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-06 18:33:10.065 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-06 18:33:10.336 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-06 18:33:10.342 +05:30 [INF] Hosting environment: Development
+2025-07-06 18:33:10.348 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-06 18:33:11.035 +05:30 [INF] HTTP GET /swagger/index.html responded 200 in 141.7718 ms
+2025-07-06 18:33:11.239 +05:30 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 20.8303 ms

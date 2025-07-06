@@ -1,0 +1,29 @@
+# Dependencies
+/packages
+/bin
+/obj
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+build/
+Build/
+build_output/
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+TestResults/
+
+# Secrets - IMPORTANT
+appsettings.Development.json
+Properties/launchSettings.json
+ 
