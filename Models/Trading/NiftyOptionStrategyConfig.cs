@@ -15,5 +15,7 @@ namespace KiteConnectApi.Models.Trading
         public int MaxTradesPerDay { get; set; }
         public bool IsEnabled { get; set; }
         public int HedgeDistancePoints { get; set; }
+        public string? OrderType { get; set; }
+        public string? InstrumentPrefix { get; set; }
     }
 }

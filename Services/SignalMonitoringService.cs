@@ -32,7 +32,7 @@ namespace KiteConnectApi.Services
                     var signals = await _signalGenerationService.GenerateSignals();
                     foreach (var signal in signals)
                     {
-                        var alert = new Models.Trading.TradingViewAlert { Symbol = signal.Symbol, Action = signal.SignalType };
+                        var alert = new Models.Trading.TradingViewAlert { Action = signal.SignalType, Strike = 22500, Type = "PE", Signal = "Generated-Signal" };
                         await _strategyService.HandleTradingViewAlert(alert);
                     }
                 }

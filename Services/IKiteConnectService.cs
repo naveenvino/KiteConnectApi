@@ -22,6 +22,6 @@ namespace KiteConnectApi.Services
         Task<Dictionary<string, OHLC>> GetOHLCAsync(string[] instruments);
         Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId);
         Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType);
-        Task<List<Position>> GetPositionsAsync();
+        Task<List<TradePosition>> GetPositionsAsync();
     }
 }

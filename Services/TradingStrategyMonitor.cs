@@ -24,11 +24,8 @@ namespace KiteConnectApi.Services
                 _logger.LogInformation("Trading Strategy Monitor running at: {time}", DateTimeOffset.Now);
                 try
                 {
-                    using (var scope = _serviceScopeFactory.CreateScope())
-                    {
-                        var strategyService = scope.ServiceProvider.GetRequiredService<StrategyService>();
-                        await strategyService.MonitorAndExecuteExits();
-                    }
+                    // The MonitorAndExecuteExits method was removed as this logic
+                    // is now handled by the Stoploss alert.
                 }
                 catch (Exception ex)
                 {

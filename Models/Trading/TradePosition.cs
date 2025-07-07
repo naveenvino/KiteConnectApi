@@ -6,8 +6,7 @@ namespace KiteConnectApi.Models.Trading
     public class TradePosition
     {
         [Key]
-        public int Id { get; set; } // This will be the primary key
-
+        public int Id { get; set; }
         public string? PositionId { get; set; }
         public string? TradingSymbol { get; set; }
         public int Quantity { get; set; }
@@ -15,5 +14,7 @@ namespace KiteConnectApi.Models.Trading
         public decimal PnL { get; set; }
         public DateTime LastUpdated { get; set; }
         public string Status { get; set; } = "";
+        public string? Product { get; set; }
+        public string? Exchange { get; set; }
     }
 }

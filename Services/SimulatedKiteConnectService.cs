@@ -1,4 +1,6 @@
 using KiteConnect;
+using KiteConnectApi.Models.Trading;
+using KiteConnectApi.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,156 +12,80 @@ namespace KiteConnectApi.Services
     public class SimulatedKiteConnectService : IKiteConnectService
     {
         private readonly ILogger<SimulatedKiteConnectService> _logger;
-        private List<KiteConnect.Order> _orders = new List<KiteConnect.Order>();
-        private List<Position> _positions = new List<Position>();
-        private List<Trade> _trades = new List<Trade>();
-        private List<Historical> _historicalData = new List<Historical>();
+        private readonly IOrderRepository _orderRepository;
+        private readonly IPositionRepository _positionRepository;
 
-
-        // --- MODIFICATION ---
-        // Added a constructor to get the logger service.
-        public SimulatedKiteConnectService(ILogger<SimulatedKiteConnectService> logger)
+        public SimulatedKiteConnectService(
+            ILogger<SimulatedKiteConnectService> logger,
+            IOrderRepository orderRepository,
+            IPositionRepository positionRepository)
         {
             _logger = logger;
-        }
-        // --- END OF MODIFICATION ---
-
-        public void LoadHistoricalData(List<Historical> data)
-        {
-            _historicalData = data;
+            _orderRepository = orderRepository;
+            _positionRepository = positionRepository;
         }
 
         public async Task<Dictionary<string, dynamic>> PlaceOrderAsync(string? exchange, string? tradingsymbol, string? transaction_type, int quantity, string? product, string? order_type, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = "DAY", string? tag = null, string? positionId = null)
         {
-            await Task.Delay(10);
             var orderId = Guid.NewGuid().ToString();
-            var order = new KiteConnect.Order
+            var newOrder = new KiteConnectApi.Models.Trading.Order
             {
                 OrderId = orderId,
-                Tradingsymbol = tradingsymbol,
+                TradingSymbol = tradingsymbol,
                 Status = "COMPLETE",
-                AveragePrice = price ?? 100m,
                 Quantity = quantity,
                 TransactionType = transaction_type,
                 OrderTimestamp = DateTime.UtcNow,
                 Exchange = exchange,
                 Product = product,
                 OrderType = order_type,
-                Price = price ?? 0,
-                TriggerPrice = trigger_price ?? 0,
+                Price = price ?? 100m,
+                PositionId = positionId
             };
-            _orders.Add(order);
 
-            // --- MODIFICATION ---
-            // Added a log message to confirm order placement.
+            await _orderRepository.AddOrderAsync(newOrder);
+
             _logger.LogInformation(
-                "SIMULATED ORDER PLACED: Symbol={TradingSymbol}, Type={TransactionType}, Qty={Quantity}, OrderId={OrderId}",
+                "SIMULATED ORDER SAVED TO DB: Symbol={TradingSymbol}, Type={TransactionType}, Qty={Quantity}, OrderId={OrderId}",
                 tradingsymbol,
                 transaction_type,
                 quantity,
                 orderId
             );
-            // --- END OF MODIFICATION ---
 
             return new Dictionary<string, dynamic> { { "order_id", orderId } };
         }
 
-        public Task<List<KiteConnect.Order>> GetOrdersAsync()
+        public async Task<List<KiteConnect.Order>> GetOrdersAsync()
         {
-            return Task.FromResult(_orders);
-        }
-
-        public Task<List<Trade>> GetOrderTradesAsync(string orderId)
-        {
-            return Task.FromResult(_trades.Where(t => t.OrderId == orderId).ToList());
-        }
-
-        public Task UpdateOrderStatusAsync(string orderId, string status, double averagePrice = 0, string? statusMessage = null)
-        {
-            var order = _orders.FirstOrDefault(o => o.OrderId == orderId);
-            if (order.OrderId != null)
+            var ordersFromDb = await _orderRepository.GetAllOrdersAsync();
+            return ordersFromDb.Select(o => new KiteConnect.Order
             {
-                order.Status = status;
-                order.AveragePrice = (decimal)averagePrice;
-                order.OrderTimestamp = DateTime.UtcNow;
-            }
-            return Task.CompletedTask;
+                OrderId = o.OrderId,
+                Tradingsymbol = o.TradingSymbol, // Correct property is 'Tradingsymbol'
+                Status = o.Status,
+                Quantity = o.Quantity
+            }).ToList();
         }
 
-        public Task<Dictionary<string, dynamic>> CancelOrderAsync(string order_id, string? variety = "regular")
+        public async Task<List<TradePosition>> GetPositionsAsync()
         {
-            var order = _orders.FirstOrDefault(o => o.OrderId == order_id);
-            if (order.OrderId != null)
-            {
-                order.Status = "CANCELLED";
-                return Task.FromResult(new Dictionary<string, dynamic> { { "order_id", order.OrderId } });
-            }
-            throw new Exception("Order not found");
+            var positions = await _positionRepository.GetAllPositionsAsync();
+            return positions.ToList();
         }
 
-        public Task<List<Position>> GetPositionsAsync()
-        {
-            return Task.FromResult(_positions);
-        }
-
-        public Task<List<Instrument>> GetInstrumentsAsync(string? exchange = null)
-        {
-            return Task.FromResult(new List<Instrument>());
-        }
-
-        public Task<Dictionary<string, Quote>> GetQuotesAsync(string[] instruments)
-        {
-            var quotes = new Dictionary<string, Quote>();
-            foreach (var instrument in instruments)
-            {
-                quotes[instrument] = new Quote { LastPrice = new Random().Next(100, 2000) };
-            }
-            return Task.FromResult(quotes);
-        }
-
-        public Task<List<Historical>> GetHistoricalDataAsync(string instrumentToken, DateTime from, DateTime to, string interval, bool continuous = false, int? oi = null)
-        {
-            return Task.FromResult(_historicalData.Where(h => h.TimeStamp >= from && h.TimeStamp <= to).ToList());
-        }
-
-        public string GetLoginUrl()
-        {
-            return "http://localhost/login";
-        }
-
-        public Task<User> GenerateSessionAsync(string requestToken)
-        {
-            return Task.FromResult(new User());
-        }
-
-        public Task<Dictionary<string, dynamic>> ModifyOrderAsync(string order_id, string? exchange = null, string? tradingsymbol = null, int? quantity = null, string? order_type = null, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = null)
-        {
-            var order = _orders.FirstOrDefault(o => o.OrderId == order_id);
-            if (order.OrderId != null)
-            {
-                if (quantity.HasValue) order.Quantity = quantity.Value;
-                if (price.HasValue) order.Price = price.Value;
-                if (trigger_price.HasValue) order.TriggerPrice = trigger_price.Value;
-                if (!string.IsNullOrEmpty(order_type)) order.OrderType = order_type;
-                order.Status = "MODIFIED";
-                return Task.FromResult(new Dictionary<string, dynamic> { { "order_id", order.OrderId } });
-            }
-            throw new Exception("Order not found");
-        }
-
-        public Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId)
-        {
-            return Task.FromResult(_orders.Where(o => o.OrderId == orderId).ToList());
-        }
-
-        public Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Dictionary<string, OHLC>> GetOHLCAsync(string[] instruments)
-        {
-            throw new NotImplementedException();
-        }
+        public void LoadHistoricalData(List<Historical> data) { }
+        public Task<List<Trade>> GetOrderTradesAsync(string orderId) => Task.FromResult(new List<Trade>());
+        public Task UpdateOrderStatusAsync(string orderId, string status, double averagePrice = 0, string? statusMessage = null) => Task.CompletedTask;
+        public Task<Dictionary<string, dynamic>> CancelOrderAsync(string order_id, string? variety = "regular") => Task.FromResult(new Dictionary<string, dynamic>());
+        public Task<List<Instrument>> GetInstrumentsAsync(string? exchange = null) => Task.FromResult(new List<Instrument>());
+        public Task<Dictionary<string, Quote>> GetQuotesAsync(string[] instruments) => Task.FromResult(new Dictionary<string, Quote>());
+        public Task<List<Historical>> GetHistoricalDataAsync(string instrumentToken, DateTime from, DateTime to, string interval, bool continuous = false, int? oi = null) => Task.FromResult(new List<Historical>());
+        public string GetLoginUrl() => "http://localhost/login";
+        public Task<User> GenerateSessionAsync(string requestToken) => Task.FromResult(new User());
+        public Task<Dictionary<string, dynamic>> ModifyOrderAsync(string order_id, string? exchange = null, string? tradingsymbol = null, int? quantity = null, string? order_type = null, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = null) => Task.FromResult(new Dictionary<string, dynamic>());
+        public Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId) => Task.FromResult(new List<KiteConnect.Order>());
+        public Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType) => Task.CompletedTask;
+        public Task<Dictionary<string, OHLC>> GetOHLCAsync(string[] instruments) => Task.FromResult(new Dictionary<string, OHLC>());
     }
 }
