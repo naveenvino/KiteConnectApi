@@ -10,18 +10,15 @@ using KiteConnectApi.Repositories;
 using KiteConnect;
 using KiteConnectApi.Models.Trading;
 using Microsoft.OpenApi.Models;
-using System.IO; // Required for Path.Combine
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- MODIFICATION: Set up an absolute path for the database ---
 var contentRoot = builder.Environment.ContentRootPath;
 var dbPath = Path.Combine(contentRoot, "KiteConnectApi.db");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"DataSource={dbPath}"));
-// --- END OF MODIFICATION ---
 
-// Configure Serilog for logging
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -31,21 +28,21 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Configure strongly typed settings objects
 builder.Services.Configure<NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
 builder.Services.Configure<RiskParameters>(builder.Configuration.GetSection("RiskParameters"));
 
-// Register KiteConnect client
 builder.Services.AddSingleton(new Kite(builder.Configuration["Kite:ApiKey"]));
 
-// Register repositories and services with dependency injection
 bool useSimulated = builder.Configuration.GetValue<bool>("UseSimulatedServices");
 
 if (useSimulated)
 {
-    builder.Services.AddScoped<IKiteConnectService, SimulatedKiteConnectService>();
-    builder.Services.AddScoped<IPositionRepository, SimulatedPositionRepository>();
-    builder.Services.AddScoped<IOrderRepository, SimulatedOrderRepository>();
+    // --- FIX: Changed from AddScoped to AddSingleton ---
+    // This ensures the same instance is used for all requests, preserving the in-memory data.
+    builder.Services.AddSingleton<IKiteConnectService, SimulatedKiteConnectService>();
+    builder.Services.AddSingleton<IPositionRepository, SimulatedPositionRepository>();
+    builder.Services.AddSingleton<IOrderRepository, SimulatedOrderRepository>();
+    // --- END OF FIX ---
 }
 else
 {
@@ -60,11 +57,9 @@ builder.Services.AddScoped<TechnicalAnalysisService>();
 builder.Services.AddScoped<MarketDataService>();
 builder.Services.AddScoped<INotificationService, EmailNotificationService>();
 
-// Register hosted services for background tasks
 builder.Services.AddHostedService<TradingStrategyMonitor>();
 builder.Services.AddHostedService<OrderMonitoringService>();
 builder.Services.AddHostedService<ExpiryDayMonitor>();
-
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
@@ -100,7 +95,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure JWT Authentication
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(x =>
 {
@@ -120,7 +114,6 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -135,7 +128,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// This will create and update the database every time the app starts.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -151,8 +143,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

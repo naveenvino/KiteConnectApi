@@ -1,3 +1,4 @@
+using KiteConnectApi.Repositories;
 using KiteConnectApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -9,10 +10,12 @@ namespace KiteConnectApi.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IKiteConnectService _kiteConnectService;
+        private readonly IOrderRepository _orderRepository; // Added repository for history
 
-        public OrdersController(IKiteConnectService kiteConnectService)
+        public OrdersController(IKiteConnectService kiteConnectService, IOrderRepository orderRepository)
         {
             _kiteConnectService = kiteConnectService;
+            _orderRepository = orderRepository; // Injected repository
         }
 
         [HttpGet]
@@ -21,6 +24,15 @@ namespace KiteConnectApi.Controllers
             var orders = await _kiteConnectService.GetOrdersAsync();
             return Ok(orders);
         }
+
+        // --- NEW ENDPOINT ---
+        [HttpGet("history")]
+        public async Task<IActionResult> GetOrderHistory()
+        {
+            var allOrders = await _orderRepository.GetAllOrdersAsync();
+            return Ok(allOrders);
+        }
+        // --- END OF NEW ENDPOINT ---
 
         [HttpPost]
         public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderParams orderParams)
