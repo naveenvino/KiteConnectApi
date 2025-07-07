@@ -1,6 +1,5 @@
-// --- Services/SimulatedKiteConnectService.cs ---
-// This file had incorrect null checks for structs and used the wrong property for dates.
 using KiteConnect;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +9,20 @@ namespace KiteConnectApi.Services
 {
     public class SimulatedKiteConnectService : IKiteConnectService
     {
+        private readonly ILogger<SimulatedKiteConnectService> _logger;
         private List<KiteConnect.Order> _orders = new List<KiteConnect.Order>();
         private List<Position> _positions = new List<Position>();
         private List<Trade> _trades = new List<Trade>();
         private List<Historical> _historicalData = new List<Historical>();
-        
+
+
+        // --- MODIFICATION ---
+        // Added a constructor to get the logger service.
+        public SimulatedKiteConnectService(ILogger<SimulatedKiteConnectService> logger)
+        {
+            _logger = logger;
+        }
+        // --- END OF MODIFICATION ---
 
         public void LoadHistoricalData(List<Historical> data)
         {
@@ -41,6 +49,18 @@ namespace KiteConnectApi.Services
                 TriggerPrice = trigger_price ?? 0,
             };
             _orders.Add(order);
+
+            // --- MODIFICATION ---
+            // Added a log message to confirm order placement.
+            _logger.LogInformation(
+                "SIMULATED ORDER PLACED: Symbol={TradingSymbol}, Type={TransactionType}, Qty={Quantity}, OrderId={OrderId}",
+                tradingsymbol,
+                transaction_type,
+                quantity,
+                orderId
+            );
+            // --- END OF MODIFICATION ---
+
             return new Dictionary<string, dynamic> { { "order_id", orderId } };
         }
 
@@ -57,7 +77,6 @@ namespace KiteConnectApi.Services
         public Task UpdateOrderStatusAsync(string orderId, string status, double averagePrice = 0, string? statusMessage = null)
         {
             var order = _orders.FirstOrDefault(o => o.OrderId == orderId);
-            // FIXED: Structs cannot be null. Check a property instead.
             if (order.OrderId != null)
             {
                 order.Status = status;
@@ -70,7 +89,6 @@ namespace KiteConnectApi.Services
         public Task<Dictionary<string, dynamic>> CancelOrderAsync(string order_id, string? variety = "regular")
         {
             var order = _orders.FirstOrDefault(o => o.OrderId == order_id);
-            // FIXED: Structs cannot be null. Check a property instead.
             if (order.OrderId != null)
             {
                 order.Status = "CANCELLED";
@@ -101,7 +119,6 @@ namespace KiteConnectApi.Services
 
         public Task<List<Historical>> GetHistoricalDataAsync(string instrumentToken, DateTime from, DateTime to, string interval, bool continuous = false, int? oi = null)
         {
-            // FIXED: The property is 'TimeStamp', not 'Date'.
             return Task.FromResult(_historicalData.Where(h => h.TimeStamp >= from && h.TimeStamp <= to).ToList());
         }
 
@@ -118,7 +135,6 @@ namespace KiteConnectApi.Services
         public Task<Dictionary<string, dynamic>> ModifyOrderAsync(string order_id, string? exchange = null, string? tradingsymbol = null, int? quantity = null, string? order_type = null, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = null)
         {
             var order = _orders.FirstOrDefault(o => o.OrderId == order_id);
-            // FIXED: Structs cannot be null. Check a property instead.
             if (order.OrderId != null)
             {
                 if (quantity.HasValue) order.Quantity = quantity.Value;

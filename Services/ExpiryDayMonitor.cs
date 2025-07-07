@@ -36,6 +36,7 @@ namespace KiteConnectApi.Services
                             var openPositions = await positionRepository.GetOpenPositionsAsync();
                             foreach (var position in openPositions)
                             {
+                                // MODIFIED: Changed property to 'TradingSymbol' to match the updated model.
                                 if (position.TradingSymbol != null)
                                 {
                                     await strategyService.ClosePositionAsync(position.TradingSymbol);

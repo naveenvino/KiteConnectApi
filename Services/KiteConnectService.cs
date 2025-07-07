@@ -19,7 +19,25 @@ namespace KiteConnectApi.Services
         {
             _configuration = configuration;
             _logger = logger;
-            _kite = new Kite(_configuration["Kite:ApiKey"], Debug: true);
+
+            // --- FIX ---
+            // Read both the API Key and the Access Token from the configuration.
+            var apiKey = _configuration["KiteConnect:ApiKey"];
+            _accessToken = _configuration["KiteConnect:AccessToken"];
+
+            _kite = new Kite(apiKey, Debug: true);
+
+            // Set the access token on the Kite object immediately if it exists.
+            if (!string.IsNullOrEmpty(_accessToken) && _accessToken != "YOUR_ACCESS_TOKEN_HERE")
+            {
+                _kite.SetAccessToken(_accessToken);
+                _logger.LogInformation("KiteConnectService initialized with Access Token from configuration.");
+            }
+            else
+            {
+                _logger.LogWarning("KiteConnectService initialized WITHOUT an Access Token. Real trading will fail.");
+            }
+            // --- END OF FIX ---
         }
 
         public string GetLoginUrl()
@@ -32,8 +50,7 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Corrected method name: GenerateSession
-                User user = _kite.GenerateSession(requestToken, _configuration["Kite:ApiSecret"]);
+                User user = _kite.GenerateSession(requestToken, _configuration["KiteConnect:ApiSecret"]);
                 _accessToken = user.AccessToken;
                 _logger.LogInformation("Session generated successfully.");
                 return user;
@@ -57,7 +74,6 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Corrected method name: GetInstruments
                 return _kite.GetInstruments(exchange);
             }
             catch (Exception e)
@@ -72,7 +88,6 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Corrected method name: GetQuote
                 return _kite.GetQuote(instruments);
             }
             catch (Exception e)
@@ -87,7 +102,6 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Corrected method name: GetPositions
                 PositionResponse positionResponse = _kite.GetPositions();
                 return positionResponse.Net;
             }
@@ -103,7 +117,6 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Corrected method name: GetOrders
                 return _kite.GetOrders();
             }
             catch (Exception e)
@@ -119,7 +132,6 @@ namespace KiteConnectApi.Services
             try
             {
                 bool oiFlag = oi.HasValue && oi.Value == 1;
-                // Corrected method name: GetHistoricalData
                 return _kite.GetHistoricalData(instrumentToken, from, to, interval, continuous, oiFlag);
             }
             catch (Exception e)
@@ -134,8 +146,6 @@ namespace KiteConnectApi.Services
             await Task.Yield();
             try
             {
-                // Using named arguments to match the library's method signature
-                // and avoid ambiguity in parameter order.
                 return _kite.PlaceOrder(
                     Exchange: exchange,
                     TradingSymbol: tradingsymbol,
@@ -159,13 +169,11 @@ namespace KiteConnectApi.Services
 
         public async Task<Dictionary<string, dynamic>> ModifyOrderAsync(string orderId, string? exchange = null, string? tradingSymbol = null, int? quantity = null, string? orderType = null, decimal? price = null, decimal? triggerPrice = null, int? variety = null, string? validity = null)
         {
-            // Implementation needed
             return await Task.FromResult(new Dictionary<string, dynamic>());
         }
 
         public async Task<Dictionary<string, dynamic>> CancelOrderAsync(string orderId, string? variety = null)
         {
-            // Implementation needed
             return await Task.FromResult(new Dictionary<string, dynamic>());
         }
 

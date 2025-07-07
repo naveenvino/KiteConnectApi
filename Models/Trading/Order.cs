@@ -6,8 +6,9 @@ namespace KiteConnectApi.Models.Trading
     public class Order
     {
         [Key]
+        public int Id { get; set; } // This will be the primary key
+
         public string? OrderId { get; set; }
-        public int Id { get; set; }
         public string? TradingSymbol { get; set; }
         public string? Exchange { get; set; }
         public string? TransactionType { get; set; }
@@ -18,7 +19,6 @@ namespace KiteConnectApi.Models.Trading
         public string? Validity { get; set; }
         public string? Status { get; set; }
         public string? PositionId { get; set; }
-        // ADDED: This property was missing, causing errors in repositories.
         public DateTime OrderTimestamp { get; set; }
     }
 }

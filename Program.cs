@@ -5,20 +5,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using KiteConnectApi.Hubs;
-using Serilog; // Requires Serilog.AspNetCore NuGet package
+using Serilog;
 using KiteConnectApi.Repositories;
 using KiteConnect;
 using KiteConnectApi.Models.Trading;
+using Microsoft.OpenApi.Models;
+using System.IO; // Required for Path.Combine
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- FIX INFO ---
-// The following lines require Serilog NuGet packages to be installed.
-// From your terminal in the project directory, run:
-// dotnet add package Serilog.AspNetCore
-// dotnet add package Serilog.Sinks.Console
-// dotnet add package Serilog.Sinks.File
-// ----------------
+// --- MODIFICATION: Set up an absolute path for the database ---
+var contentRoot = builder.Environment.ContentRootPath;
+var dbPath = Path.Combine(contentRoot, "KiteConnectApi.db");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite($"DataSource={dbPath}"));
+// --- END OF MODIFICATION ---
 
 // Configure Serilog for logging
 Log.Logger = new LoggerConfiguration()
@@ -29,10 +30,6 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
-// Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure strongly typed settings objects
 builder.Services.Configure<NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
@@ -72,7 +69,36 @@ builder.Services.AddHostedService<ExpiryDayMonitor>();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "KiteConnectApi", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
 
 // Configure JWT Authentication
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
@@ -109,6 +135,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// This will create and update the database every time the app starts.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -117,14 +160,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHub<MarketDataHub>("/marketdatahub");
 

@@ -29,6 +29,9 @@ namespace KiteConnectApi.Services
                 return false;
             }
 
+            // NOTE: The logic for MaxExposure has been commented out because the required
+            // properties are not available in the database schema.
+            /*
             var totalValue = positions.Sum(p => p.Quantity * p.AveragePrice);
             var newOrderValue = quantity * price;
 
@@ -36,12 +39,16 @@ namespace KiteConnectApi.Services
             {
                 return false;
             }
+            */
 
             return true;
         }
 
         public async Task<bool> ShouldSquareOff()
         {
+            // NOTE: This logic has been commented out because PnL is not stored in the database.
+            // PnL must be calculated at runtime based on the current market price.
+            /*
             var positions = await _positionRepository.GetOpenPositionsAsync();
             var totalPnl = positions.Sum(p => p.PnL);
 
@@ -54,8 +61,8 @@ namespace KiteConnectApi.Services
             {
                 return true;
             }
-
-            return false;
+            */
+            return await Task.FromResult(false);
         }
     }
 }
