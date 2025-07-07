@@ -7,7 +7,9 @@ namespace KiteConnectApi.Models.Trading
 {
     public class TradePosition
     {
+        
         [Key]
+        public string PositionId { get; set; } = "";
         public int Id { get; set; }
         public string? TradingSymbol { get; set; }
         public int Quantity { get; set; }
@@ -19,6 +21,6 @@ namespace KiteConnectApi.Models.Trading
         public string Status { get; set; } = "";
 
         // ADDED: PositionId to link orders to a specific position.
-        public string PositionId { get; set; } = "";
+        
     }
 }

@@ -6,8 +6,8 @@ namespace KiteConnectApi.Models.Trading
     public class Order
     {
         [Key]
-        public int Id { get; set; }
         public string? OrderId { get; set; }
+        public int Id { get; set; }
         public string? TradingSymbol { get; set; }
         public string? Exchange { get; set; }
         public string? TransactionType { get; set; }
