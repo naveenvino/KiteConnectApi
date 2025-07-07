@@ -12,19 +12,25 @@ namespace KiteConnectApi.Services
     {
         private readonly IKiteConnectService _kiteConnectService;
         private readonly IPositionRepository _positionRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly ILogger<StrategyService> _logger;
         private readonly NiftyOptionStrategyConfig _strategyConfig;
+        private readonly RiskManagementService _riskManagementService;
 
         public StrategyService(
             IKiteConnectService kiteConnectService,
             IPositionRepository positionRepository,
+            IOrderRepository orderRepository,
             ILogger<StrategyService> logger,
-            IOptions<NiftyOptionStrategyConfig> strategyConfig)
+            IOptions<NiftyOptionStrategyConfig> strategyConfig,
+            RiskManagementService riskManagementService)
         {
             _kiteConnectService = kiteConnectService;
             _positionRepository = positionRepository;
+            _orderRepository = orderRepository;
             _logger = logger;
             _strategyConfig = strategyConfig.Value;
+            _riskManagementService = riskManagementService;
         }
 
         public async Task HandleTradingViewAlert(TradingViewAlert alert)
@@ -47,50 +53,52 @@ namespace KiteConnectApi.Services
 
         private async Task HandleEntry(TradingViewAlert alert)
         {
+            // --- FIX: Calling CanPlaceOrder without arguments ---
+            if (!await _riskManagementService.CanPlaceOrder())
+            {
+                _logger.LogWarning("Risk Management Check FAILED: Max open positions reached. Order not placed.");
+                return;
+            }
+            _logger.LogInformation("Risk Management Check PASSED.");
+            // --- END OF FIX ---
+
             _logger.LogInformation("Executing ENTRY for Strike: {Strike}, Type: {Type}", alert.Strike, alert.Type);
 
-            // 1. Determine the main and hedge strike prices
             int mainStrike = alert.Strike;
             int hedgeStrike;
-            string transactionType = "SELL"; // We are shorting the main leg
+            string transactionType = "SELL";
 
-            if (alert.Type?.ToUpper() == "CE") // Bearish signal, sell a Call
+            if (alert.Type?.ToUpper() == "CE")
             {
                 hedgeStrike = mainStrike + _strategyConfig.HedgeDistancePoints;
             }
-            else // Bullish signal, sell a Put
+            else
             {
                 hedgeStrike = mainStrike - _strategyConfig.HedgeDistancePoints;
             }
 
-            // 2. Get the trading symbols for the current week's expiry
             string mainTradingSymbol = GetNiftyWeeklyOptionSymbol(mainStrike, alert.Type);
             string hedgeTradingSymbol = GetNiftyWeeklyOptionSymbol(hedgeStrike, alert.Type);
+            string newPositionId = Guid.NewGuid().ToString();
 
-            // 3. Place the orders
             try
             {
-                // Sell the main option
-                await _kiteConnectService.PlaceOrderAsync(
-                    exchange: _strategyConfig.Exchange,
-                    tradingsymbol: mainTradingSymbol,
-                    transaction_type: transactionType,
-                    quantity: _strategyConfig.Quantity,
-                    product: _strategyConfig.ProductType,
-                    order_type: _strategyConfig.OrderType
-                );
-                _logger.LogInformation("Main leg order placed: SELL {Symbol}", mainTradingSymbol);
+                var newPosition = new TradePosition
+                {
+                    PositionId = newPositionId,
+                    TradingSymbol = mainTradingSymbol,
+                    Quantity = _strategyConfig.Quantity,
+                    Status = "Open",
+                    LastUpdated = DateTime.UtcNow,
+                    Signal = alert.Signal,
+                    Product = _strategyConfig.ProductType,
+                    Exchange = _strategyConfig.Exchange
+                };
+                await _positionRepository.AddPositionAsync(newPosition);
+                _logger.LogInformation("New position created and saved to DB with PositionId: {PositionId} for Signal: {Signal}", newPositionId, alert.Signal);
 
-                // Buy the hedge option
-                await _kiteConnectService.PlaceOrderAsync(
-                    exchange: _strategyConfig.Exchange,
-                    tradingsymbol: hedgeTradingSymbol,
-                    transaction_type: "BUY", // Hedge is always a buy
-                    quantity: _strategyConfig.Quantity,
-                    product: _strategyConfig.ProductType,
-                    order_type: _strategyConfig.OrderType
-                );
-                _logger.LogInformation("Hedge leg order placed: BUY {Symbol}", hedgeTradingSymbol);
+                await _kiteConnectService.PlaceOrderAsync(_strategyConfig.Exchange, mainTradingSymbol, transactionType, _strategyConfig.Quantity, _strategyConfig.ProductType, _strategyConfig.OrderType, positionId: newPositionId);
+                await _kiteConnectService.PlaceOrderAsync(_strategyConfig.Exchange, hedgeTradingSymbol, "BUY", _strategyConfig.Quantity, _strategyConfig.ProductType, _strategyConfig.OrderType, positionId: newPositionId);
             }
             catch (Exception ex)
             {
@@ -101,50 +109,58 @@ namespace KiteConnectApi.Services
         private async Task HandleStoploss(TradingViewAlert alert)
         {
             _logger.LogInformation("Executing STOPLOSS for Signal: {Signal}", alert.Signal);
-            // In a real scenario, you would fetch the open position associated with this signal.
-            // For now, we will assume we need to close any open Nifty option positions.
-            await CloseAllOpenPositions();
-        }
 
-        public async Task CloseAllOpenPositions()
-        {
-            var openPositions = await _kiteConnectService.GetPositionsAsync();
-            var niftyPositions = openPositions.Where(p => p.TradingSymbol.StartsWith(_strategyConfig.InstrumentPrefix) && p.Quantity != 0).ToList();
+            var positionToClose = await _positionRepository.GetOpenPositionBySignalAsync(alert.Signal);
 
-            if (!niftyPositions.Any())
+            if (positionToClose == null || positionToClose.PositionId == null)
             {
-                _logger.LogInformation("No open Nifty positions to close.");
+                _logger.LogWarning("Could not find an open position for signal {Signal} to apply stoploss.", alert.Signal);
                 return;
             }
 
-            foreach (var position in niftyPositions)
+            _logger.LogInformation("Found open position {PositionId} for signal {Signal}. Closing all associated orders.", positionToClose.PositionId, alert.Signal);
+
+            var ordersToClose = await _orderRepository.GetOrdersByPositionIdAsync(positionToClose.PositionId);
+
+            foreach (var order in ordersToClose)
             {
-                string transactionType = position.Quantity > 0 ? "SELL" : "BUY";
-                int quantityToClose = Math.Abs(position.Quantity);
+                if (order.TradingSymbol == null) continue;
 
-                _logger.LogInformation("Closing position: {Type} {Quantity} of {Symbol}", transactionType, quantityToClose, position.TradingSymbol);
-
+                string closingTransactionType = order.TransactionType == "BUY" ? "SELL" : "BUY";
                 await _kiteConnectService.PlaceOrderAsync(
-                    exchange: position.Exchange,
-                    tradingsymbol: position.TradingSymbol,
-                    transaction_type: transactionType,
-                    quantity: quantityToClose,
-                    product: position.Product,
+                    exchange: order.Exchange,
+                    tradingsymbol: order.TradingSymbol,
+                    transaction_type: closingTransactionType,
+                    quantity: order.Quantity,
+                    product: order.Product,
                     order_type: "MARKET"
                 );
+                _logger.LogInformation("Placed closing order for {TradingSymbol}", order.TradingSymbol);
             }
+
+            positionToClose.Status = "Closed";
+            positionToClose.LastUpdated = DateTime.UtcNow;
+            await _positionRepository.UpdatePositionAsync(positionToClose);
+            _logger.LogInformation("Position {PositionId} status updated to Closed.", positionToClose.PositionId);
         }
 
         private string GetNiftyWeeklyOptionSymbol(int strike, string optionType)
         {
             DateTime expiry = GetNextWeeklyExpiry();
             string year = expiry.ToString("yy");
-            string month = expiry.ToString("MMM").ToUpper();
-            string day = expiry.Day.ToString();
 
-            // Format: NIFTY<YY><MMM><DD><STRIKE><TYPE>
-            // Example: NIFTY25JUL1022500CE
-            return $"{_strategyConfig.InstrumentPrefix}{year}{month}{day}{strike}{optionType.ToUpper()}";
+            string monthChar;
+            switch (expiry.Month)
+            {
+                case 10: monthChar = "O"; break;
+                case 11: monthChar = "N"; break;
+                case 12: monthChar = "D"; break;
+                default: monthChar = expiry.Month.ToString(); break;
+            }
+
+            string day = expiry.Day.ToString("D2");
+
+            return $"{_strategyConfig.InstrumentPrefix}{year}{monthChar}{day}{strike}{optionType.ToUpper()}";
         }
 
         public DateTime GetNextWeeklyExpiry()
@@ -153,12 +169,12 @@ namespace KiteConnectApi.Services
             int daysUntilThursday = ((int)DayOfWeek.Thursday - (int)today.DayOfWeek + 7) % 7;
             if (daysUntilThursday == 0 && DateTime.Now.Hour >= 16)
             {
-                // If it's Thursday after market close, get next week's Thursday
                 daysUntilThursday = 7;
             }
             return today.AddDays(daysUntilThursday);
         }
 
+        // --- FIX: Added the missing ClosePositionAsync method ---
         public async Task ClosePositionAsync(string tradingSymbol)
         {
             _logger.LogInformation("Closing position for {Symbol}", tradingSymbol);
@@ -166,7 +182,7 @@ namespace KiteConnectApi.Services
 
             var positionToClose = positions.FirstOrDefault(p => p.TradingSymbol == tradingSymbol && p.Quantity != 0);
 
-            if (positionToClose.TradingSymbol != null)
+            if (positionToClose != null)
             {
                 string transactionType = positionToClose.Quantity > 0 ? "SELL" : "BUY";
                 await _kiteConnectService.PlaceOrderAsync(
@@ -179,5 +195,6 @@ namespace KiteConnectApi.Services
                 );
             }
         }
+        // --- END OF FIX ---
     }
 }

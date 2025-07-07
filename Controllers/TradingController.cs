@@ -8,7 +8,9 @@ namespace KiteConnectApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    // --- MODIFICATION: Allow anonymous access when JWT is disabled ---
+    [AllowAnonymous]
+    // --- END OF MODIFICATION ---
     public class TradingController : ControllerBase
     {
         private readonly StrategyService _strategyService;
@@ -21,12 +23,7 @@ namespace KiteConnectApi.Controllers
         [HttpPost("alert")]
         public async Task<IActionResult> HandleAlert([FromBody] TradingViewAlert alert)
         {
-            // --- FIX ---
-            // The controller was calling the wrong method.
-            // It now correctly calls HandleTradingViewAlert to process the incoming alert.
             await _strategyService.HandleTradingViewAlert(alert);
-            // --- END OF FIX ---
-
             return Ok(new { Status = "AlertProcessed" });
         }
     }

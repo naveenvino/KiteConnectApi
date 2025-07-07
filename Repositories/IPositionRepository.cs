@@ -13,5 +13,6 @@ namespace KiteConnectApi.Repositories
         Task DeletePositionAsync(string positionId);
         Task<IEnumerable<TradePosition>> GetOpenPositionsAsync();
         Task<IEnumerable<TradePosition>> GetPendingPositionsAsync();
+        Task<TradePosition?> GetOpenPositionBySignalAsync(string signal);
     }
 }

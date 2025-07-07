@@ -35,21 +35,22 @@ builder.Services.AddSingleton(new Kite(builder.Configuration["Kite:ApiKey"]));
 
 bool useSimulated = builder.Configuration.GetValue<bool>("UseSimulatedServices");
 
+// --- FIX: Always use the real repositories for database persistence ---
 if (useSimulated)
 {
-    // --- FIX: Changed from AddScoped to AddSingleton ---
-    // This ensures the same instance is used for all requests, preserving the in-memory data.
-    builder.Services.AddSingleton<IKiteConnectService, SimulatedKiteConnectService>();
-    builder.Services.AddSingleton<IPositionRepository, SimulatedPositionRepository>();
-    builder.Services.AddSingleton<IOrderRepository, SimulatedOrderRepository>();
-    // --- END OF FIX ---
+    // Use the simulated service for placing trades, but it will save to the real DB.
+    builder.Services.AddScoped<IKiteConnectService, SimulatedKiteConnectService>();
 }
 else
 {
     builder.Services.AddScoped<IKiteConnectService, KiteConnectService>();
-    builder.Services.AddScoped<IPositionRepository, PositionRepository>();
-    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 }
+
+// Repositories are always scoped to the request and use the database.
+builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+// --- END OF FIX ---
+
 
 builder.Services.AddScoped<StrategyService>();
 builder.Services.AddScoped<RiskManagementService>();
@@ -65,54 +66,67 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "KiteConnectApi", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = ParameterLocation.Header,
-            },
-            new List<string>()
-        }
-    });
-});
+var jwtEnabled = builder.Configuration.GetValue<bool>("Jwt:Enabled");
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
-builder.Services.AddAuthentication(x =>
+if (jwtEnabled)
 {
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(x =>
-{
-    x.RequireHttpsMetadata = false;
-    x.SaveToken = true;
-    x.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddSwaggerGen(c =>
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
-    };
-});
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "KiteConnectApi", Version = "v1" });
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    },
+                    Scheme = "oauth2",
+                    Name = "Bearer",
+                    In = ParameterLocation.Header,
+                },
+                new List<string>()
+            }
+        });
+    });
+
+    var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
+    builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+}
+else
+{
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "KiteConnectApi", Version = "v1" });
+    });
+}
+
 
 builder.Services.AddCors(options =>
 {
@@ -152,8 +166,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
+
+if (jwtEnabled)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
 app.MapControllers();
 app.MapHub<MarketDataHub>("/marketdatahub");
 

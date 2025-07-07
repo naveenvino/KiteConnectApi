@@ -7,12 +7,7 @@ namespace KiteConnectApi.Repositories
 {
     public class SimulatedPositionRepository : IPositionRepository
     {
-        private readonly List<TradePosition> _positions;
-
-        public SimulatedPositionRepository()
-        {
-            _positions = new List<TradePosition>();
-        }
+        private readonly List<TradePosition> _positions = new List<TradePosition>();
 
         public Task<TradePosition?> GetPositionByIdAsync(string positionId)
         {
@@ -57,9 +52,11 @@ namespace KiteConnectApi.Repositories
             return Task.FromResult<IEnumerable<TradePosition>>(_positions.Where(p => p.Status == "Pending" || p.Status == "Pending Closure"));
         }
 
-        public void Clear()
+        // --- NEW METHOD IMPLEMENTATION ---
+        public Task<TradePosition?> GetOpenPositionBySignalAsync(string signal)
         {
-            _positions.Clear();
+            return Task.FromResult(_positions.FirstOrDefault(p => p.Signal == signal && p.Status == "Open"));
         }
+        // --- END OF NEW METHOD IMPLEMENTATION ---
     }
 }

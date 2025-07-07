@@ -16,5 +16,7 @@ namespace KiteConnectApi.Models.Trading
         public string Status { get; set; } = "";
         public string? Product { get; set; }
         public string? Exchange { get; set; }
+        public string? Signal { get; set; }
+
     }
 }

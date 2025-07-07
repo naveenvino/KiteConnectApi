@@ -18,7 +18,7 @@ namespace KiteConnectApi.Repositories
 
         public async Task<TradePosition?> GetPositionByIdAsync(string positionId)
         {
-            return await _context.TradePositions.FindAsync(positionId);
+            return await _context.TradePositions.FirstOrDefaultAsync(p => p.PositionId == positionId);
         }
 
         public async Task<IEnumerable<TradePosition>> GetAllPositionsAsync()
@@ -40,7 +40,7 @@ namespace KiteConnectApi.Repositories
 
         public async Task DeletePositionAsync(string positionId)
         {
-            var position = await _context.TradePositions.FindAsync(positionId);
+            var position = await _context.TradePositions.FirstOrDefaultAsync(p => p.PositionId == positionId);
             if (position != null)
             {
                 _context.TradePositions.Remove(position);
@@ -57,5 +57,12 @@ namespace KiteConnectApi.Repositories
         {
             return await _context.TradePositions.Where(p => p.Status == "Pending" || p.Status == "Pending Closure").ToListAsync();
         }
+
+        // --- FIX: Implementing the missing method from the interface ---
+        public async Task<TradePosition?> GetOpenPositionBySignalAsync(string signal)
+        {
+            return await _context.TradePositions.FirstOrDefaultAsync(p => p.Signal == signal && p.Status == "Open");
+        }
+        // --- END OF FIX ---
     }
 }

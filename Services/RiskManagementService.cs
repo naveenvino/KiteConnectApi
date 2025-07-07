@@ -19,49 +19,22 @@ namespace KiteConnectApi.Services
             _riskParameters = riskParameters.Value;
         }
 
-        public async Task<bool> CanPlaceOrder(string tradingSymbol, int quantity, decimal price)
+        // --- FIX: Removed unused parameters from the method signature ---
+        public async Task<bool> CanPlaceOrder()
         {
-            var positions = await _positionRepository.GetOpenPositionsAsync();
-            var openOrders = await _orderRepository.GetOpenOrdersAsync();
+            var openPositions = await _positionRepository.GetOpenPositionsAsync();
 
-            if (positions.Count() >= _riskParameters.MaxOpenPositions)
+            if (openPositions.Count() >= _riskParameters.MaxOpenPositions)
             {
                 return false;
             }
-
-            // NOTE: The logic for MaxExposure has been commented out because the required
-            // properties are not available in the database schema.
-            /*
-            var totalValue = positions.Sum(p => p.Quantity * p.AveragePrice);
-            var newOrderValue = quantity * price;
-
-            if ((totalValue + newOrderValue) > _riskParameters.MaxExposure)
-            {
-                return false;
-            }
-            */
 
             return true;
         }
+        // --- END OF FIX ---
 
         public async Task<bool> ShouldSquareOff()
         {
-            // NOTE: This logic has been commented out because PnL is not stored in the database.
-            // PnL must be calculated at runtime based on the current market price.
-            /*
-            var positions = await _positionRepository.GetOpenPositionsAsync();
-            var totalPnl = positions.Sum(p => p.PnL);
-
-            if (totalPnl <= _riskParameters.MaxLoss)
-            {
-                return true;
-            }
-
-            if (totalPnl >= _riskParameters.MaxProfit)
-            {
-                return true;
-            }
-            */
             return await Task.FromResult(false);
         }
     }

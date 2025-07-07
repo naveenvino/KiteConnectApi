@@ -59,10 +59,12 @@ namespace KiteConnectApi.Repositories
             return Task.CompletedTask;
         }
 
+        // --- FIX: Implemented the missing method ---
         public Task<IEnumerable<Order>> GetOrdersByPositionIdAsync(string positionId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(_orders.Where(o => o.PositionId == positionId).AsEnumerable());
         }
+        // --- END OF FIX ---
 
         public Task<IEnumerable<Order>> GetTodaysClosedOrdersAsync()
         {

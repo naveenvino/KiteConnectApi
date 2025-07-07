@@ -47,7 +47,10 @@ namespace KiteConnectApi.Migrations
                     AveragePrice = table.Column<decimal>(type: "TEXT", nullable: false),
                     PnL = table.Column<decimal>(type: "TEXT", nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                    Status = table.Column<string>(type: "TEXT", nullable: false),
+                    Product = table.Column<string>(type: "TEXT", nullable: true),
+                    Exchange = table.Column<string>(type: "TEXT", nullable: true),
+                    Signal = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

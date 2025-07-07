@@ -58,10 +58,12 @@ namespace KiteConnectApi.Repositories
             await _context.SaveChangesAsync();
         }
 
+        // --- FIX: Implemented the missing method ---
         public async Task<IEnumerable<Order>> GetOrdersByPositionIdAsync(string positionId)
         {
             return await _context.Orders.Where(o => o.PositionId == positionId).ToListAsync();
         }
+        // --- END OF FIX ---
 
         public async Task<IEnumerable<Order>> GetTodaysClosedOrdersAsync()
         {

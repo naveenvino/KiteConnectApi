@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KiteConnectApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250707154114_InitialCreate")]
+    [Migration("20250707175405_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -76,6 +76,9 @@ namespace KiteConnectApi.Migrations
                     b.Property<decimal>("AveragePrice")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Exchange")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("TEXT");
 
@@ -85,8 +88,14 @@ namespace KiteConnectApi.Migrations
                     b.Property<string>("PositionId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Product")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Signal")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
                         .IsRequired()

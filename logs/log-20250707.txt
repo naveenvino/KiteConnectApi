@@ -12729,3 +12729,591 @@ DELETE FROM "__EFMigrationsLock";
 2025-07-07 21:38:46.316 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:38:46.3165953+05:30"
 2025-07-07 21:38:46.316 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:38:46.3166556+05:30"
 2025-07-07 21:38:46.334 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:39:46.329 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:39:46.3294894+05:30"
+2025-07-07 21:39:46.338 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:39:46.3383154+05:30"
+2025-07-07 21:39:46.339 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:40:46.346 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:40:46.3466463+05:30"
+2025-07-07 21:40:46.356 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:40:46.3566735+05:30"
+2025-07-07 21:40:46.357 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:41:46.373 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:41:46.3736129+05:30"
+2025-07-07 21:41:46.386 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:41:46.3860070+05:30"
+2025-07-07 21:41:46.389 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:42:46.396 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:42:46.3966212+05:30"
+2025-07-07 21:42:46.396 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:42:46.3966682+05:30"
+2025-07-07 21:42:46.405 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:43:46.406 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:43:46.4066153+05:30"
+2025-07-07 21:43:46.420 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:43:46.4202663+05:30"
+2025-07-07 21:43:46.458 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:44:46.457 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:44:46.4578411+05:30"
+2025-07-07 21:44:46.461 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:44:46.4619547+05:30"
+2025-07-07 21:44:46.463 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:45:46.468 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:45:46.4686578+05:30"
+2025-07-07 21:45:46.481 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:45:46.4816050+05:30"
+2025-07-07 21:45:46.482 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:46:46.501 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:46:46.5010590+05:30"
+2025-07-07 21:46:46.501 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:46:46.5010585+05:30"
+2025-07-07 21:46:46.503 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:47:46.518 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:47:46.5188347+05:30"
+2025-07-07 21:47:46.531 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:47:46.5314781+05:30"
+2025-07-07 21:47:46.536 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 21:48:46.559 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T21:48:46.5596826+05:30"
+2025-07-07 21:48:46.559 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T21:48:46.5596675+05:30"
+2025-07-07 21:48:46.561 +05:30 [INF] Monitoring and executing exits...
+2025-07-07 22:27:25.315 +05:30 [ERR] An error occurred while migrating the database.
+System.InvalidOperationException: An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'ApplicationDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.
+   at Microsoft.EntityFrameworkCore.Diagnostics.EventDefinition`1.Log[TLoggerCategory](IDiagnosticsLogger`1 logger, TParam arg)
+   at Microsoft.EntityFrameworkCore.Diagnostics.RelationalLoggerExtensions.PendingModelChangesWarning(IDiagnosticsLogger`1 diagnostics, Type contextType)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in D:\New folder\KiteConnectApi\Program.cs:line 145
+2025-07-07 22:27:26.196 +05:30 [INF] User profile is available. Using 'C:\Users\E1791\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-07-07 22:27:26.218 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:27:26.2177636+05:30"
+2025-07-07 22:27:26.230 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:27:26.2297315+05:30"
+2025-07-07 22:27:26.236 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T22:27:26.2362225+05:30"
+2025-07-07 22:27:26.687 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 22:27:26.690 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 22:27:27.063 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 22:27:27.068 +05:30 [INF] Hosting environment: Development
+2025-07-07 22:27:27.069 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 22:27:27.459 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 22:27:27.805 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 356.7479ms
+2025-07-07 22:27:27.809 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 22:27:27.823 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 13.6936ms
+2025-07-07 22:27:27.858 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 22:27:27.931 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 73.1992ms
+2025-07-07 22:27:27.969 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 22:27:27.994 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 24.9024ms
+2025-07-07 22:28:26.226 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:28:26.2268965+05:30"
+2025-07-07 22:28:26.241 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:28:26.2413741+05:30"
+2025-07-07 22:28:45.256 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Auth/login - application/json 51
+2025-07-07 22:28:45.292 +05:30 [INF] CORS policy execution successful.
+2025-07-07 22:28:46.404 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 22:28:46.434 +05:30 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(KiteConnectApi.Controllers.LoginModel) on controller KiteConnectApi.Controllers.AuthController (KiteConnectApi).
+2025-07-07 22:28:46.686 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 22:28:46.700 +05:30 [INF] Executed action KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi) in 259.3408ms
+2025-07-07 22:28:46.702 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 22:28:46.704 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Auth/login - 200 null application/json; charset=utf-8 1447.7034ms
+2025-07-07 22:29:26.232 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:29:26.2323644+05:30"
+2025-07-07 22:29:26.247 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:29:26.2472560+05:30"
+2025-07-07 22:29:31.653 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 22:29:31.667 +05:30 [INF] CORS policy execution successful.
+2025-07-07 22:29:31.716 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 22:29:31.723 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 22:29:31.738 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 22:29:31.743 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 22:29:31.764 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY25JUL1022500CE, Type=SELL, Qty=50, OrderId=2ae07dcb-a109-41af-a960-977c0b239913
+2025-07-07 22:29:31.765 +05:30 [INF] Main leg order placed: SELL NIFTY25JUL1022500CE
+2025-07-07 22:29:31.767 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY25JUL1022800CE, Type=BUY, Qty=50, OrderId=af0cd0ec-1ef3-4974-9302-7b23768a7820
+2025-07-07 22:29:31.768 +05:30 [INF] Hedge leg order placed: BUY NIFTY25JUL1022800CE
+2025-07-07 22:29:31.769 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 22:29:31.771 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 45.4914ms
+2025-07-07 22:29:31.774 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 22:29:31.775 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 122.7434ms
+2025-07-07 22:30:26.249 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:30:26.2492236+05:30"
+2025-07-07 22:30:26.264 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:30:26.2646993+05:30"
+2025-07-07 22:31:26.261 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:31:26.2618316+05:30"
+2025-07-07 22:31:26.267 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:31:26.2678223+05:30"
+2025-07-07 22:32:26.276 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:32:26.2762989+05:30"
+2025-07-07 22:32:26.279 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:32:26.2790987+05:30"
+2025-07-07 22:33:26.281 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:33:26.2811613+05:30"
+2025-07-07 22:33:26.299 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:33:26.2995782+05:30"
+2025-07-07 22:34:26.316 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:34:26.3166196+05:30"
+2025-07-07 22:34:26.325 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:34:26.3250024+05:30"
+2025-07-07 22:35:26.336 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:35:26.3362000+05:30"
+2025-07-07 22:35:26.348 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:35:26.3482525+05:30"
+2025-07-07 22:36:26.356 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:36:26.3561651+05:30"
+2025-07-07 22:36:26.371 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:36:26.3712768+05:30"
+2025-07-07 22:37:26.379 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:37:26.3793015+05:30"
+2025-07-07 22:37:26.386 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:37:26.3859823+05:30"
+2025-07-07 22:38:26.402 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:38:26.4020538+05:30"
+2025-07-07 22:38:26.417 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:38:26.4175131+05:30"
+2025-07-07 22:39:26.430 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:39:26.4305932+05:30"
+2025-07-07 22:39:26.445 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:39:26.4455333+05:30"
+2025-07-07 22:40:26.456 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:40:26.4569236+05:30"
+2025-07-07 22:40:26.464 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:40:26.4643676+05:30"
+2025-07-07 22:41:26.470 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:41:26.4705471+05:30"
+2025-07-07 22:41:26.483 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:41:26.4839006+05:30"
+2025-07-07 22:42:26.488 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:42:26.4880304+05:30"
+2025-07-07 22:42:26.500 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:42:26.5005323+05:30"
+2025-07-07 22:43:26.509 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:43:26.5097440+05:30"
+2025-07-07 22:43:26.510 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:43:26.5101578+05:30"
+2025-07-07 22:44:26.514 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:44:26.5147351+05:30"
+2025-07-07 22:44:26.530 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:44:26.5308892+05:30"
+2025-07-07 22:45:26.516 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:45:26.5165010+05:30"
+2025-07-07 22:45:26.532 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:45:26.5322577+05:30"
+2025-07-07 22:46:26.520 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:46:26.5209502+05:30"
+2025-07-07 22:46:26.536 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:46:26.5369216+05:30"
+2025-07-07 22:47:26.522 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:47:26.5228324+05:30"
+2025-07-07 22:47:26.554 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:47:26.5549309+05:30"
+2025-07-07 22:48:26.535 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:48:26.5352759+05:30"
+2025-07-07 22:48:26.559 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:48:26.5594045+05:30"
+2025-07-07 22:49:26.552 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:49:26.5523710+05:30"
+2025-07-07 22:49:26.568 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:49:26.5687027+05:30"
+2025-07-07 22:50:26.557 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:50:26.5577308+05:30"
+2025-07-07 22:50:26.582 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:50:26.5817740+05:30"
+2025-07-07 22:51:26.564 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:51:26.5647068+05:30"
+2025-07-07 22:51:26.589 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:51:26.5890325+05:30"
+2025-07-07 22:52:26.566 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:52:26.5663531+05:30"
+2025-07-07 22:52:26.608 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:52:26.6080443+05:30"
+2025-07-07 22:53:26.566 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:53:26.5667749+05:30"
+2025-07-07 22:53:26.624 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:53:26.6241952+05:30"
+2025-07-07 22:54:26.579 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:54:26.5793841+05:30"
+2025-07-07 22:54:26.630 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:54:26.6300384+05:30"
+2025-07-07 22:55:26.588 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:55:26.5880743+05:30"
+2025-07-07 22:55:26.640 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:55:26.6406397+05:30"
+2025-07-07 22:56:26.595 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T22:56:26.5954633+05:30"
+2025-07-07 22:56:26.653 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T22:56:26.6539601+05:30"
+2025-07-07 23:02:28.407 +05:30 [ERR] An error occurred while migrating the database.
+System.InvalidOperationException: An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'ApplicationDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.
+   at Microsoft.EntityFrameworkCore.Diagnostics.EventDefinition`1.Log[TLoggerCategory](IDiagnosticsLogger`1 logger, TParam arg)
+   at Microsoft.EntityFrameworkCore.Diagnostics.RelationalLoggerExtensions.PendingModelChangesWarning(IDiagnosticsLogger`1 diagnostics, Type contextType)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in D:\New folder\KiteConnectApi\Program.cs:line 145
+2025-07-07 23:02:29.551 +05:30 [INF] User profile is available. Using 'C:\Users\E1791\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-07-07 23:02:29.590 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:02:29.5876828+05:30"
+2025-07-07 23:02:29.609 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:02:29.6091057+05:30"
+2025-07-07 23:02:29.620 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T23:02:29.6202049+05:30"
+2025-07-07 23:02:30.241 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 23:02:30.249 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 23:02:30.744 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 23:02:30.746 +05:30 [INF] Hosting environment: Development
+2025-07-07 23:02:30.748 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 23:02:31.316 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 23:02:31.892 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 591.0903ms
+2025-07-07 23:02:31.965 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 23:02:31.965 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 23:02:31.983 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 18.1967ms
+2025-07-07 23:02:32.079 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 114.1654ms
+2025-07-07 23:02:32.126 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 23:02:32.167 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 41.3869ms
+2025-07-07 23:02:43.687 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:02:46.295 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:02:46.363 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:02:46.406 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:02:46.468 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 83.7032ms
+2025-07-07 23:02:46.475 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:02:46.481 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 2793.5616ms
+2025-07-07 23:03:29.613 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:03:29.6138613+05:30"
+2025-07-07 23:03:29.629 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:03:29.6292496+05:30"
+2025-07-07 23:04:29.624 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:04:29.6248438+05:30"
+2025-07-07 23:04:29.649 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:04:29.6492863+05:30"
+2025-07-07 23:04:40.942 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:04:40.961 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:04:40.970 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:04:40.982 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:04:40.987 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 6.4503ms
+2025-07-07 23:04:40.995 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:04:41.000 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 57.2673ms
+2025-07-07 23:05:29.632 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:05:29.6320564+05:30"
+2025-07-07 23:05:29.660 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:05:29.6609254+05:30"
+2025-07-07 23:06:29.642 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:06:29.6421968+05:30"
+2025-07-07 23:06:29.667 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:06:29.6672338+05:30"
+2025-07-07 23:07:29.651 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:07:29.6512714+05:30"
+2025-07-07 23:07:29.683 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:07:29.6833304+05:30"
+2025-07-07 23:08:29.654 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:08:29.6547977+05:30"
+2025-07-07 23:08:29.693 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:08:29.6931165+05:30"
+2025-07-07 23:10:48.779 +05:30 [ERR] An error occurred while migrating the database.
+System.InvalidOperationException: An error was generated for warning 'Microsoft.EntityFrameworkCore.Migrations.PendingModelChangesWarning': The model for context 'ApplicationDbContext' has pending changes. Add a new migration before updating the database. See https://aka.ms/efcore-docs-pending-changes. This exception can be suppressed or logged by passing event ID 'RelationalEventId.PendingModelChangesWarning' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'.
+   at Microsoft.EntityFrameworkCore.Diagnostics.EventDefinition`1.Log[TLoggerCategory](IDiagnosticsLogger`1 logger, TParam arg)
+   at Microsoft.EntityFrameworkCore.Diagnostics.RelationalLoggerExtensions.PendingModelChangesWarning(IDiagnosticsLogger`1 diagnostics, Type contextType)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in D:\New folder\KiteConnectApi\Program.cs:line 137
+2025-07-07 23:10:50.067 +05:30 [INF] User profile is available. Using 'C:\Users\E1791\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-07-07 23:10:50.102 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:10:50.1005157+05:30"
+2025-07-07 23:10:50.115 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:10:50.1153530+05:30"
+2025-07-07 23:10:50.122 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T23:10:50.1223537+05:30"
+2025-07-07 23:10:50.748 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 23:10:50.756 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 23:10:51.237 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 23:10:51.240 +05:30 [INF] Hosting environment: Development
+2025-07-07 23:10:51.242 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 23:10:51.292 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 23:10:51.905 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 624.5082ms
+2025-07-07 23:10:52.064 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 23:10:52.064 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 23:10:52.084 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 19.8196ms
+2025-07-07 23:10:52.170 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 106.241ms
+2025-07-07 23:10:52.213 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 23:10:52.246 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 33.0363ms
+2025-07-07 23:11:10.853 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Auth/login - application/json 51
+2025-07-07 23:11:10.929 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:11:13.242 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:11:13.295 +05:30 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(KiteConnectApi.Controllers.LoginModel) on controller KiteConnectApi.Controllers.AuthController (KiteConnectApi).
+2025-07-07 23:11:13.837 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:11:13.865 +05:30 [INF] Executed action KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi) in 551.6638ms
+2025-07-07 23:11:13.873 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:11:13.878 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Auth/login - 200 null application/json; charset=utf-8 3025.1031ms
+2025-07-07 23:11:50.108 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:11:50.1082941+05:30"
+2025-07-07 23:11:50.121 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:11:50.1218722+05:30"
+2025-07-07 23:12:05.136 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:12:05.198 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:12:05.306 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:12:05.321 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:12:05.345 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:12:05.355 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:12:05.395 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY25JUL1022500CE, Type=SELL, Qty=50, OrderId=a9cc0702-4fc6-409d-b673-d7d462aee85d
+2025-07-07 23:12:05.407 +05:30 [INF] Main leg order placed: SELL NIFTY25JUL1022500CE
+2025-07-07 23:12:05.413 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY25JUL1022800CE, Type=BUY, Qty=50, OrderId=67e50d8c-94b7-4f4c-a9f7-c6848fccf647
+2025-07-07 23:12:05.435 +05:30 [INF] Hedge leg order placed: BUY NIFTY25JUL1022800CE
+2025-07-07 23:12:05.442 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:12:05.454 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 124.5907ms
+2025-07-07 23:12:05.459 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:12:05.463 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 326.9523ms
+2025-07-07 23:12:15.300 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:12:15.321 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:12:15.334 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:12:15.350 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:12:15.400 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 52.59ms
+2025-07-07 23:12:15.409 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:12:15.419 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 118.5948ms
+2025-07-07 23:12:50.121 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:12:50.1217677+05:30"
+2025-07-07 23:12:50.127 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:12:50.1270153+05:30"
+2025-07-07 23:24:39.227 +05:30 [INF] Executed DbCommand (34ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA journal_mode = 'wal';
+2025-07-07 23:24:39.380 +05:30 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2025-07-07 23:24:39.403 +05:30 [INF] Executed DbCommand (11ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsLock' AND "type" = 'table';
+2025-07-07 23:24:39.424 +05:30 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsLock" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK___EFMigrationsLock" PRIMARY KEY,
+    "Timestamp" TEXT NOT NULL
+);
+2025-07-07 23:24:39.445 +05:30 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT OR IGNORE INTO "__EFMigrationsLock"("Id", "Timestamp") VALUES(1, '2025-07-07 17:54:39.4377254+00:00');
+SELECT changes();
+2025-07-07 23:24:39.594 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+    "ProductVersion" TEXT NOT NULL
+);
+2025-07-07 23:24:39.627 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-07-07 23:24:39.644 +05:30 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-07-07 23:24:39.682 +05:30 [INF] Applying migration '20250707175405_InitialCreate'.
+2025-07-07 23:24:39.717 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "Orders" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_Orders" PRIMARY KEY AUTOINCREMENT,
+    "OrderId" TEXT NULL,
+    "TradingSymbol" TEXT NULL,
+    "Exchange" TEXT NULL,
+    "TransactionType" TEXT NULL,
+    "Quantity" INTEGER NOT NULL,
+    "Price" TEXT NOT NULL,
+    "Product" TEXT NULL,
+    "OrderType" TEXT NULL,
+    "Validity" TEXT NULL,
+    "Status" TEXT NULL,
+    "PositionId" TEXT NULL,
+    "OrderTimestamp" TEXT NOT NULL
+);
+2025-07-07 23:24:39.740 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "TradePositions" (
+    "Id" INTEGER NOT NULL CONSTRAINT "PK_TradePositions" PRIMARY KEY AUTOINCREMENT,
+    "PositionId" TEXT NULL,
+    "TradingSymbol" TEXT NULL,
+    "Quantity" INTEGER NOT NULL,
+    "AveragePrice" TEXT NOT NULL,
+    "PnL" TEXT NOT NULL,
+    "LastUpdated" TEXT NOT NULL,
+    "Status" TEXT NOT NULL,
+    "Product" TEXT NULL,
+    "Exchange" TEXT NULL,
+    "Signal" TEXT NULL
+);
+2025-07-07 23:24:39.772 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20250707175405_InitialCreate', '9.0.6');
+2025-07-07 23:24:39.793 +05:30 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DELETE FROM "__EFMigrationsLock";
+2025-07-07 23:24:40.955 +05:30 [INF] User profile is available. Using 'C:\Users\E1791\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-07-07 23:24:41.001 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:24:40.9953720+05:30"
+2025-07-07 23:24:41.019 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:24:41.0193757+05:30"
+2025-07-07 23:24:41.033 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T23:24:41.0330681+05:30"
+2025-07-07 23:24:41.735 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 23:24:41.741 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 23:24:42.189 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 23:24:42.194 +05:30 [INF] Hosting environment: Development
+2025-07-07 23:24:42.200 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 23:24:42.675 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 23:24:43.176 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 516.9561ms
+2025-07-07 23:24:43.236 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 23:24:43.262 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 23:24:43.295 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 58.8884ms
+2025-07-07 23:24:43.357 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 95.1336ms
+2025-07-07 23:24:43.399 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 23:24:43.430 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 30.5879ms
+2025-07-07 23:25:01.869 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:25:01.957 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:25:04.299 +05:30 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2025-07-07 23:25:04.321 +05:30 [INF] AuthenticationScheme: Bearer was challenged.
+2025-07-07 23:25:04.333 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 401 0 null 2464.1236ms
+2025-07-07 23:25:27.013 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Auth/login - application/json 51
+2025-07-07 23:25:27.034 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:25:27.049 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:25:27.135 +05:30 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(KiteConnectApi.Controllers.LoginModel) on controller KiteConnectApi.Controllers.AuthController (KiteConnectApi).
+2025-07-07 23:25:27.752 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:25:27.777 +05:30 [INF] Executed action KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi) in 612.1627ms
+2025-07-07 23:25:27.784 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:25:27.799 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Auth/login - 200 null application/json; charset=utf-8 786.8766ms
+2025-07-07 23:25:41.007 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:25:41.0076584+05:30"
+2025-07-07 23:25:41.040 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:25:41.0402701+05:30"
+2025-07-07 23:26:21.876 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:26:21.897 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:26:21.998 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:26:22.016 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:26:22.043 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:26:22.056 +05:30 [INF] Risk Management Check PASSED.
+2025-07-07 23:26:22.059 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:26:22.075 +05:30 [INF] New position created and saved to DB with PositionId: dbfa8ad0-4e68-43bf-8d67-d6f0fec0df46 for Signal: S3
+2025-07-07 23:26:22.084 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=SELL, Qty=50, OrderId=0aae6b70-1c83-4cec-ad75-bb5bc1d5a3af
+2025-07-07 23:26:22.093 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022800CE, Type=BUY, Qty=50, OrderId=28bc1906-64ad-400a-b051-51be6c04b9e8
+2025-07-07 23:26:22.104 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:26:22.116 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 89.8891ms
+2025-07-07 23:26:22.122 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:26:22.126 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 250.1823ms
+2025-07-07 23:26:41.020 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:26:41.0197458+05:30"
+2025-07-07 23:26:41.063 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:26:41.0629360+05:30"
+2025-07-07 23:26:45.642 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:26:45.663 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:26:45.682 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:26:45.695 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:26:45.739 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 45.9763ms
+2025-07-07 23:26:45.746 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:26:45.752 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 109.7837ms
+2025-07-07 23:27:18.975 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:27:19.008 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:27:19.019 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:27:19.027 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:27:19.044 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:27:19.052 +05:30 [INF] Risk Management Check PASSED.
+2025-07-07 23:27:19.056 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:27:19.060 +05:30 [INF] New position created and saved to DB with PositionId: 07334c02-18ce-424a-8752-3e1d4c6d1716 for Signal: S3
+2025-07-07 23:27:19.063 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=SELL, Qty=50, OrderId=2a6e6680-558a-4e7b-941c-e804422640a6
+2025-07-07 23:27:19.073 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022800CE, Type=BUY, Qty=50, OrderId=ac20b598-2907-4674-bc22-5d04d991b49e
+2025-07-07 23:27:19.078 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:27:19.083 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 44.5512ms
+2025-07-07 23:27:19.088 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:27:19.092 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 117.082ms
+2025-07-07 23:27:37.917 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:27:37.948 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:27:37.958 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:27:37.970 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:27:37.980 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 9.9959ms
+2025-07-07 23:27:37.997 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:27:38.003 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 86.5509ms
+2025-07-07 23:27:41.030 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:27:41.0302202+05:30"
+2025-07-07 23:27:41.067 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:27:41.0668847+05:30"
+2025-07-07 23:28:41.042 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:28:41.0424614+05:30"
+2025-07-07 23:28:41.075 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:28:41.0752530+05:30"
+2025-07-07 23:29:41.043 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:29:41.0438071+05:30"
+2025-07-07 23:29:41.089 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:29:41.0893718+05:30"
+2025-07-07 23:30:41.052 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:30:41.0524781+05:30"
+2025-07-07 23:30:41.102 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:30:41.1014410+05:30"
+2025-07-07 23:31:41.062 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:31:41.0628329+05:30"
+2025-07-07 23:31:41.111 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:31:41.1115705+05:30"
+2025-07-07 23:45:56.690 +05:30 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2025-07-07 23:45:56.916 +05:30 [INF] Executed DbCommand (40ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsLock' AND "type" = 'table';
+2025-07-07 23:45:56.954 +05:30 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT OR IGNORE INTO "__EFMigrationsLock"("Id", "Timestamp") VALUES(1, '2025-07-07 18:15:56.9378793+00:00');
+SELECT changes();
+2025-07-07 23:45:57.180 +05:30 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+    "ProductVersion" TEXT NOT NULL
+);
+2025-07-07 23:45:57.214 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-07-07 23:45:57.232 +05:30 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-07-07 23:45:57.270 +05:30 [INF] No migrations were applied. The database is already up to date.
+2025-07-07 23:45:57.286 +05:30 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DELETE FROM "__EFMigrationsLock";
+2025-07-07 23:45:58.618 +05:30 [INF] User profile is available. Using 'C:\Users\E1791\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-07-07 23:45:58.667 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:45:58.6612993+05:30"
+2025-07-07 23:45:58.687 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:45:58.6866280+05:30"
+2025-07-07 23:45:58.702 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T23:45:58.7022185+05:30"
+2025-07-07 23:45:59.613 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 23:45:59.616 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 23:46:00.231 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 23:46:00.236 +05:30 [INF] Hosting environment: Development
+2025-07-07 23:46:00.240 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 23:46:00.309 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 23:46:00.920 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 620.4781ms
+2025-07-07 23:46:00.987 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 23:46:01.004 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 23:46:01.012 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 24.6105ms
+2025-07-07 23:46:01.594 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 590.0271ms
+2025-07-07 23:46:01.638 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 23:46:01.679 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 40.5198ms
+2025-07-07 23:46:19.798 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Auth/login - application/json 51
+2025-07-07 23:46:19.926 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:46:22.478 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:46:22.521 +05:30 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Login(KiteConnectApi.Controllers.LoginModel) on controller KiteConnectApi.Controllers.AuthController (KiteConnectApi).
+2025-07-07 23:46:23.093 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType0`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:46:23.123 +05:30 [INF] Executed action KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi) in 574.8457ms
+2025-07-07 23:46:23.131 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.AuthController.Login (KiteConnectApi)'
+2025-07-07 23:46:23.135 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Auth/login - 200 null application/json; charset=utf-8 3337.2451ms
+2025-07-07 23:46:45.074 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:46:45.222 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:46:45.239 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:46:45.261 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:46:45.294 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 38.3224ms
+2025-07-07 23:46:45.304 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:46:45.307 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 233.6201ms
+2025-07-07 23:46:58.694 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:46:58.6941805+05:30"
+2025-07-07 23:46:58.707 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:46:58.7069742+05:30"
+2025-07-07 23:47:02.166 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:47:02.187 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:47:02.255 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:47:02.271 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:47:02.308 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:47:02.324 +05:30 [INF] Risk Management Check PASSED.
+2025-07-07 23:47:02.330 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:47:02.354 +05:30 [INF] New position created and saved to DB with PositionId: e6b30e3e-7d50-4c3a-b2a9-7ea916c20257 for Signal: S3
+2025-07-07 23:47:02.362 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=SELL, Qty=50, OrderId=70bc4af1-98b8-422f-85c2-0f0dad35b19d
+2025-07-07 23:47:02.367 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022800CE, Type=BUY, Qty=50, OrderId=fd81d941-891c-429a-adab-80153d4a1c1c
+2025-07-07 23:47:02.374 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:47:02.382 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 94.4779ms
+2025-07-07 23:47:02.387 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:47:02.390 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 224.2278ms
+2025-07-07 23:47:07.400 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:47:07.416 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:47:07.422 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:47:07.429 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:47:07.451 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 22.0545ms
+2025-07-07 23:47:07.459 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:47:07.467 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 66.473ms
+2025-07-07 23:47:20.468 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 69
+2025-07-07 23:47:20.483 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:47:20.490 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:47:20.498 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:47:20.513 +05:30 [INF] Handling TradingView Alert: Stoploss for S3
+2025-07-07 23:47:20.518 +05:30 [INF] Executing STOPLOSS for Signal: S3
+2025-07-07 23:47:20.521 +05:30 [INF] Found open position e6b30e3e-7d50-4c3a-b2a9-7ea916c20257 for signal S3. Closing all associated orders.
+2025-07-07 23:48:14.093 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:48:14.0929645+05:30"
+2025-07-07 23:48:14.178 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 53670.3597ms
+2025-07-07 23:48:14.179 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:48:14.1797253+05:30"
+2025-07-07 23:48:14.206 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:48:14.218 +05:30 [ERR] An unhandled exception has occurred while executing the request.
+System.NotImplementedException: The method or operation is not implemented.
+   at KiteConnectApi.Repositories.SimulatedOrderRepository.GetOrdersByPositionIdAsync(String positionId) in D:\New folder\KiteConnectApi\Repositories\SimulatedOrderRepository.cs:line 64
+   at KiteConnectApi.Services.StrategyService.HandleStoploss(TradingViewAlert alert) in D:\New folder\KiteConnectApi\Services\StrategyService.cs:line 123
+   at KiteConnectApi.Services.StrategyService.HandleTradingViewAlert(TradingViewAlert alert) in D:\New folder\KiteConnectApi\Services\StrategyService.cs:line 46
+   at KiteConnectApi.Controllers.TradingController.HandleAlert(TradingViewAlert alert) in D:\New folder\KiteConnectApi\Controllers\TradingController.cs:line 27
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2025-07-07 23:51:56.323 +05:30 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2025-07-07 23:51:56.514 +05:30 [INF] Executed DbCommand (33ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsLock' AND "type" = 'table';
+2025-07-07 23:51:56.579 +05:30 [INF] Executed DbCommand (44ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT OR IGNORE INTO "__EFMigrationsLock"("Id", "Timestamp") VALUES(1, '2025-07-07 18:21:56.5331534+00:00');
+SELECT changes();
+2025-07-07 23:51:56.741 +05:30 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+    "ProductVersion" TEXT NOT NULL
+);
+2025-07-07 23:51:56.770 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-07-07 23:51:56.789 +05:30 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-07-07 23:51:56.813 +05:30 [INF] No migrations were applied. The database is already up to date.
+2025-07-07 23:51:56.823 +05:30 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DELETE FROM "__EFMigrationsLock";
+2025-07-07 23:51:57.825 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:51:57.8200964+05:30"
+2025-07-07 23:51:57.843 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:51:57.8426859+05:30"
+2025-07-07 23:51:57.856 +05:30 [INF] Expiry Day Monitor running at: "2025-07-07T23:51:57.8559947+05:30"
+2025-07-07 23:51:58.476 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-07 23:51:58.481 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-07 23:51:58.696 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-07 23:51:58.700 +05:30 [INF] Hosting environment: Development
+2025-07-07 23:51:58.703 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-07 23:51:58.874 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/index.html - null null
+2025-07-07 23:51:59.523 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/index.html - 200 null text/html;charset=utf-8 660.759ms
+2025-07-07 23:51:59.527 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - null null
+2025-07-07 23:51:59.582 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_framework/aspnetcore-browser-refresh.js - 200 13780 application/javascript; charset=utf-8 55.46ms
+2025-07-07 23:51:59.634 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/_vs/browserLink - null null
+2025-07-07 23:51:59.719 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/_vs/browserLink - 200 null text/javascript; charset=UTF-8 84.3464ms
+2025-07-07 23:51:59.768 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - null null
+2025-07-07 23:51:59.808 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 39.6156ms
+2025-07-07 23:52:25.900 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:52:25.993 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:52:26.047 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:52:26.080 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:52:26.115 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 50.4491ms
+2025-07-07 23:52:26.123 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:52:26.128 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 228.069ms
+2025-07-07 23:52:41.940 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:52:41.962 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:52:41.971 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:52:42.001 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:52:42.106 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:52:42.118 +05:30 [INF] Risk Management Check PASSED.
+2025-07-07 23:52:42.122 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:52:42.142 +05:30 [INF] New position created and saved to DB with PositionId: ae9c470e-0d61-4129-ac1f-5fbdf50adf2f for Signal: S3
+2025-07-07 23:52:42.154 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=SELL, Qty=50, OrderId=8407e39f-9cdd-4f3c-b616-d093de0b19e1
+2025-07-07 23:52:42.165 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022800CE, Type=BUY, Qty=50, OrderId=532e794f-c060-43f8-92de-93910b7dfc11
+2025-07-07 23:52:42.176 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:52:42.190 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 181.3698ms
+2025-07-07 23:52:42.198 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:52:42.205 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 264.9055ms
+2025-07-07 23:52:48.603 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 66
+2025-07-07 23:52:48.612 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:52:48.619 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:52:48.630 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:52:48.640 +05:30 [INF] Handling TradingView Alert: Entry for S3
+2025-07-07 23:52:48.647 +05:30 [INF] Risk Management Check PASSED.
+2025-07-07 23:52:48.650 +05:30 [INF] Executing ENTRY for Strike: 22500, Type: CE
+2025-07-07 23:52:48.652 +05:30 [INF] New position created and saved to DB with PositionId: 282f47f1-f420-4168-8478-4a2e27805365 for Signal: S3
+2025-07-07 23:52:48.657 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=SELL, Qty=50, OrderId=98707f30-507f-414f-beab-8406db76890f
+2025-07-07 23:52:48.662 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022800CE, Type=BUY, Qty=50, OrderId=97510330-e463-4a17-b901-4975e185cac6
+2025-07-07 23:52:48.667 +05:30 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType1`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2025-07-07 23:52:48.672 +05:30 [INF] Executed action KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi) in 37.6571ms
+2025-07-07 23:52:48.677 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:52:48.679 +05:30 [INF] Request finished HTTP/2 POST https://localhost:7178/api/Trading/alert - 200 null application/json; charset=utf-8 75.9859ms
+2025-07-07 23:52:54.061 +05:30 [INF] Request starting HTTP/2 GET https://localhost:7178/api/Orders/history - null null
+2025-07-07 23:52:54.077 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:52:54.084 +05:30 [INF] Route matched with {action = "GetOrderHistory", controller = "Orders"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetOrderHistory() on controller KiteConnectApi.Controllers.OrdersController (KiteConnectApi).
+2025-07-07 23:52:54.095 +05:30 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[KiteConnectApi.Models.Trading.Order, KiteConnectApi, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-07-07 23:52:54.113 +05:30 [INF] Executed action KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi) in 19.3195ms
+2025-07-07 23:52:54.121 +05:30 [INF] Executed endpoint 'KiteConnectApi.Controllers.OrdersController.GetOrderHistory (KiteConnectApi)'
+2025-07-07 23:52:54.129 +05:30 [INF] Request finished HTTP/2 GET https://localhost:7178/api/Orders/history - 200 null application/json; charset=utf-8 67.9748ms
+2025-07-07 23:52:57.846 +05:30 [INF] Trading Strategy Monitor running at: "2025-07-07T23:52:57.8466545+05:30"
+2025-07-07 23:52:57.861 +05:30 [INF] Order Monitoring Service running at: "2025-07-07T23:52:57.8616511+05:30"
+2025-07-07 23:53:11.359 +05:30 [INF] Request starting HTTP/2 POST https://localhost:7178/api/Trading/alert - application/json 69
+2025-07-07 23:53:11.376 +05:30 [INF] CORS policy execution successful.
+2025-07-07 23:53:11.383 +05:30 [INF] Executing endpoint 'KiteConnectApi.Controllers.TradingController.HandleAlert (KiteConnectApi)'
+2025-07-07 23:53:11.394 +05:30 [INF] Route matched with {action = "HandleAlert", controller = "Trading"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] HandleAlert(KiteConnectApi.Models.Trading.TradingViewAlert) on controller KiteConnectApi.Controllers.TradingController (KiteConnectApi).
+2025-07-07 23:53:11.413 +05:30 [INF] Handling TradingView Alert: Stoploss for S3
+2025-07-07 23:53:11.423 +05:30 [INF] Executing STOPLOSS for Signal: S3
+2025-07-07 23:53:11.430 +05:30 [INF] Found open position ae9c470e-0d61-4129-ac1f-5fbdf50adf2f for signal S3. Closing all associated orders.
+2025-07-07 23:53:11.438 +05:30 [INF] SIMULATED ORDER SAVED TO DB: Symbol=NIFTY2571022500CE, Type=BUY, Qty=50, OrderId=7fdb80e1-2b11-41e5-b0b8-68e519b62b87
+2025-07-07 23:53:11.448 +05:30 [INF] Placed closing order for NIFTY2571022500CE
