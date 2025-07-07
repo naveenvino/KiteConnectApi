@@ -8,9 +8,7 @@ namespace KiteConnectApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    // --- MODIFICATION: Allow anonymous access when JWT is disabled ---
     [AllowAnonymous]
-    // --- END OF MODIFICATION ---
     public class TradingController : ControllerBase
     {
         private readonly StrategyService _strategyService;
@@ -26,5 +24,14 @@ namespace KiteConnectApi.Controllers
             await _strategyService.HandleTradingViewAlert(alert);
             return Ok(new { Status = "AlertProcessed" });
         }
+
+        // --- NEW ENDPOINT FOR MANUAL EXIT ---
+        [HttpPost("exit-all")]
+        public async Task<IActionResult> ExitAllPositions()
+        {
+            await _strategyService.ExitAllPositionsAsync();
+            return Ok(new { Status = "Exit all command processed." });
+        }
+        // --- END OF NEW ENDPOINT ---
     }
 }
