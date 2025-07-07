@@ -21,8 +21,7 @@ namespace KiteConnectApi.Controllers
         [HttpPost("alert")]
         public async Task<IActionResult> HandleAlert([FromBody] TradingViewAlert alert)
         {
-            // Error CS1061: Renamed 'ProcessTradingViewAlert' to 'HandleTradingViewAlert'.
-            await _strategyService.HandleTradingViewAlert(alert);
+            await _strategyService.ExecuteStrategy();
             return Ok(new { Status = "AlertProcessed" });
         }
     }

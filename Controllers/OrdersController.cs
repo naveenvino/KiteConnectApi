@@ -8,9 +8,9 @@ namespace KiteConnectApi.Controllers
     [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
-        private readonly KiteConnectService _kiteConnectService;
+        private readonly IKiteConnectService _kiteConnectService;
 
-        public OrdersController(KiteConnectService kiteConnectService)
+        public OrdersController(IKiteConnectService kiteConnectService)
         {
             _kiteConnectService = kiteConnectService;
         }
@@ -22,45 +22,57 @@ namespace KiteConnectApi.Controllers
             return Ok(orders);
         }
 
-        [HttpGet("{orderId}/trades")]
-        public async Task<IActionResult> GetOrderTrades(string orderId)
-        {
-            var trades = await _kiteConnectService.GetOrderTradesAsync(orderId);
-            return Ok(trades);
-        }
-
         [HttpPost]
-        public async Task<IActionResult> PlaceOrder([FromForm] string exchange, [FromForm] string tradingsymbol, [FromForm] string transaction_type, [FromForm] int quantity, [FromForm] string product, [FromForm] string order_type, [FromForm] decimal? price)
+        public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderParams orderParams)
         {
-            var response = await _kiteConnectService.PlaceOrderAsync(exchange, tradingsymbol, transaction_type, quantity, product, order_type, price);
-            return Ok(response);
+            var order = await _kiteConnectService.PlaceOrderAsync(
+                orderParams.Exchange,
+                orderParams.TradingSymbol,
+                orderParams.TransactionType,
+                orderParams.Quantity,
+                orderParams.Product,
+                orderParams.OrderType,
+                orderParams.Price);
+
+            return Ok(order);
         }
 
         [HttpPut("{orderId}")]
-        public async Task<IActionResult> ModifyOrder(string orderId, [FromForm] string price, [FromForm] string quantity)
+        public async Task<IActionResult> ModifyOrder(string orderId, [FromBody] ModifyOrderParams orderParams)
         {
-            // Error was here: CS1503 and CS1503
-            // The 'price' and 'quantity' from the form are strings and must be parsed.
-
-            // Attempt to parse the price string to a decimal. If it's null or empty, it will be null.
-            decimal? parsedPrice = !string.IsNullOrEmpty(price) ? decimal.Parse(price) : (decimal?)null;
-
-            // Attempt to parse the quantity string to an integer. If it's null or empty, it will be null.
-            int? parsedQuantity = !string.IsNullOrEmpty(quantity) ? int.Parse(quantity) : (int?)null;
-
-            var response = await _kiteConnectService.ModifyOrderAsync(
-                order_id: orderId,
-                price: parsedPrice,
-                quantity: parsedQuantity
+            var result = await _kiteConnectService.ModifyOrderAsync(
+                orderId,
+                quantity: orderParams.Quantity,
+                price: orderParams.Price,
+                order_type: orderParams.OrderType
             );
-            return Ok(response);
+            return Ok(result);
         }
 
         [HttpDelete("{orderId}")]
         public async Task<IActionResult> CancelOrder(string orderId)
         {
-            var response = await _kiteConnectService.CancelOrderAsync(orderId);
-            return Ok(response);
+            var result = await _kiteConnectService.CancelOrderAsync(orderId);
+            return Ok(result);
         }
+    }
+
+    public class PlaceOrderParams
+    {
+        public string? Exchange { get; set; }
+        public string? TradingSymbol { get; set; }
+        public string? TransactionType { get; set; }
+        public int Quantity { get; set; }
+        public string? Product { get; set; }
+        public string? OrderType { get; set; }
+        public decimal? Price { get; set; }
+    }
+
+    public class ModifyOrderParams
+    {
+        public int? Quantity { get; set; }
+        public decimal? Price { get; set; }
+        public decimal? TriggerPrice { get; set; }
+        public string OrderType { get; set; } = "";
     }
 }

@@ -1,70 +1,113 @@
-using KiteConnectApi.Services;
-using KiteConnectApi.Hubs;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
-using Microsoft.EntityFrameworkCore;
 using KiteConnectApi.Data;
-using KiteConnectApi.Repositories;
-using Serilog;
-using Serilog.Events;
+using KiteConnectApi.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+using KiteConnectApi.Hubs;
+using Serilog; // Requires Serilog.AspNetCore NuGet package
+using KiteConnectApi.Repositories;
+using KiteConnect;
+using KiteConnectApi.Models.Trading;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- FIX INFO ---
+// The following lines require Serilog NuGet packages to be installed.
+// From your terminal in the project directory, run:
+// dotnet add package Serilog.AspNetCore
+// dotnet add package Serilog.Sinks.Console
+// dotnet add package Serilog.Sinks.File
+// ----------------
+
+// Configure Serilog for logging
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
-
-builder.Services.AddAuthorization();
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<KiteConnectService>();
-builder.Services.AddSingleton<MarketDataService>();
+// Configure strongly typed settings objects
+builder.Services.Configure<NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
+builder.Services.Configure<RiskParameters>(builder.Configuration.GetSection("RiskParameters"));
+
+// Register KiteConnect client
+builder.Services.AddSingleton(new Kite(builder.Configuration["Kite:ApiKey"]));
+
+// Register repositories and services with dependency injection
+bool useSimulated = builder.Configuration.GetValue<bool>("UseSimulatedServices");
+
+if (useSimulated)
+{
+    builder.Services.AddScoped<IKiteConnectService, SimulatedKiteConnectService>();
+    builder.Services.AddScoped<IPositionRepository, SimulatedPositionRepository>();
+    builder.Services.AddScoped<IOrderRepository, SimulatedOrderRepository>();
+}
+else
+{
+    builder.Services.AddScoped<IKiteConnectService, KiteConnectService>();
+    builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+}
+
 builder.Services.AddScoped<StrategyService>();
-builder.Services.AddScoped<IPositionRepository, PositionRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<RiskManagementService>();
+builder.Services.AddScoped<TechnicalAnalysisService>();
+builder.Services.AddScoped<MarketDataService>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+
+// Register hosted services for background tasks
+builder.Services.AddHostedService<TradingStrategyMonitor>();
+builder.Services.AddHostedService<OrderMonitoringService>();
+builder.Services.AddHostedService<ExpiryDayMonitor>();
+
+
+builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<KiteConnectApi.Models.Trading.RiskParameters>(builder.Configuration.GetSection("RiskParameters"));
+// Configure JWT Authentication
+var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
-builder.Services.Configure<KiteConnectApi.Models.Trading.NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+});
 
 var app = builder.Build();
-
-app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -75,10 +118,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Must be before UseAuthorization
+app.UseRouting();
+
+app.UseCors("AllowAll");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<MarketDataHub>("/marketdata");
+app.MapHub<MarketDataHub>("/marketdatahub");
 
 app.Run();

@@ -1,0 +1,594 @@
+//@version=6
+indicator("Weekly Levels & Bias Signals (Symbol Bias) - Bar Close", overlay=true)
+
+// --- GROUP & INPUTS ---
+var G1 = "--- Signal Display ---"
+var G2 = "--- P&L Dashboard ---"
+
+// Signal Inputs
+showWeeklyBias = input.bool(true, "Show Weekly Bias Symbols", group = G1, tooltip = "Shows the (Bull) / (Bear) symbols to indicate the weekly sentiment.")
+expiryDay = input.string("Thursday", "Expiry Day", options = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], group = G1, tooltip="Select the weekly expiry day. Stop loss alerts will only trigger on or before this day.")
+showS1 = input.bool(true, "S1: Bear Trap", group = G1, tooltip = "Triggers after a fake breakdown if the second bar recovers to close above the first bar's low.")
+showS2 = input.bool(true, "S2: Support Hold (Bullish)", group = G1, tooltip = "Shows the bullish confirmation signal at support.")
+showS3 = input.bool(true, "S3: Resistance Hold (Bearish)", group = G1, tooltip = "Shows the bearish confirmation signal at resistance when the prior week closed near the zone.")
+showS4 = input.bool(true, "S4: Bias Failure (Bullish)", group = G1, tooltip = "Shows the contrarian bullish signal after a gap up against a bearish bias. (Refined 1H Logic)")
+showS5 = input.bool(true, "S5: Bias Failure (Bearish)", group = G1, tooltip = "Shows the contrarian bearish signal after a gap down against a bullish bias.")
+showS6 = input.bool(true, "S6: Weakness Confirmed", group = G1, tooltip = "Triggers if bias is bearish, the first bar tests/fails at resistance, and the second bar confirms weakness. Only appears if no other signal is active.")
+showS7 = input.bool(true, "S7: 1H Breakout Confirmed", group = G1, tooltip = "Shows a pure 1H breakout based on the S4 engine, but without bias or gap conditions. Only appears if no other signal is active.")
+showS8 = input.bool(true, "S8: 1H Breakdown Confirmed", group = G1, tooltip = "Shows a pure 1H breakdown, the bearish counterpart to S7. Only appears if no other signal is active.")
+showJsonOnChart = input.bool(true, "Show JSON on Chart", group = G1, tooltip = "Shows the JSON alert message on the chart for entries and stop losses.")
+
+// Dashboard Inputs
+showDashboard = input.bool(true, "Show P&L Dashboard", group = G2)
+dashboardYear = input.int(2024, "Dashboard Year", group = G2, minval=2000)
+dashboardMonth = input.string("All", "Month", options=["All", "Jan-Apr", "May-Aug", "Sep-Dec"], group=G2)
+dashboardView = input.string("Performance Summary", "Dashboard View", options = ["None", "Trade Log", "Performance Summary"], group = G2, tooltip = "Select which dashboard to display on the chart.")
+
+
+// --- TYPES ---
+type WeekData
+    float high
+    float low
+    float max4h
+    float min4h
+
+type TradeLog
+    string weekStartDate
+    string signalId
+    int direction // 1 for Bullish, -1 for Bearish
+    float stopLoss
+    int entryTime
+    string outcome // "OPEN", "WIN", "LOSS"
+    int exitTime
+
+type SignalStats
+    string id
+    int totalTrades = 0
+    int wins = 0
+    int losses = 0
+
+
+// --- GLOBAL VARIABLES ---
+var box      upperZoneBox = na
+var box      lowerZoneBox = na
+var float    prevHigh     = na
+var float    prevLow      = na
+var float    prevMax4h    = na
+var float    prevMin4h    = na
+var float    prevClose    = na
+var int      weeklySig    = 0 // –1=bear, 1=bull
+
+// First-bar OHLC
+var float firstBarOpen  = na
+var float firstBarHigh  = na
+var float firstBarLow   = na
+var float firstBarClose = na
+
+// First-hour data
+var float firstHourHigh = na
+var float firstHourLow  = na
+var float firstHourClose= na
+var bool  a_signal_has_fired_this_week = false
+var int   newWeekBarIndex = na
+
+// Zone geometry
+var float lowerZTop    = na
+var float lowerZBottom = na
+var float upperZTop    = na
+var float upperZBottom = na
+var float marginLow    = na
+var float marginHigh   = na
+
+// P&L Tracking Array
+var TradeLog[] tradeLogArray = array.new<TradeLog>()
+
+// === FUNCTIONS ===
+
+f_getExpiryDayOfWeek(day) =>
+    switch day
+        "Monday"    => dayofweek.monday
+        "Tuesday"   => dayofweek.tuesday
+        "Wednesday" => dayofweek.wednesday
+        "Thursday"  => dayofweek.thursday
+        "Friday"    => dayofweek.friday
+        => dayofweek.thursday
+
+f_getQuarterMonths(quarterStr) =>
+    switch quarterStr
+        "Jan-Apr"  => [1, 4]
+        "May-Aug"  => [5, 8]
+        "Sep-Dec"  => [9, 12]
+        => [1, 12] // Default for "All"
+
+f_round_to_100(price) =>
+    math.round(price / 100) * 100
+
+f_weekData() =>
+    float wH = high
+    float wL = low
+    opens   = request.security_lower_tf(syminfo.tickerid, "240", open)
+    closes = request.security_lower_tf(syminfo.tickerid, "240", close)
+    float maxB = na
+    float minB = na
+    int n = array.size(opens)
+    if n > 0
+        for i = 0 to n - 1
+            o = array.get(opens, i)
+            c = array.get(closes, i)
+            if not na(o) and not na(c)
+                float bt = math.max(o, c)
+                float bb = math.min(o, c)
+                maxB := na(maxB) or bt > maxB ? bt : maxB
+                minB := na(minB) or bb < minB ? bb : minB
+    WeekData.new(wH, wL, maxB, minB)
+
+f_s4_logic() =>
+    var float s4_firstHourHigh = na
+    var int   s4_firstHourDay  = na
+    var float s4_highestHighOfWeek = na
+    var float s4_breakoutCandleHigh = na
+    var bool  s4_signalFired = false
+    int       s4_trigger     = 0
+    if timeframe.change("W")
+        s4_firstHourHigh      := high
+        s4_firstHourDay       := dayofweek
+        s4_highestHighOfWeek  := high
+        s4_breakoutCandleHigh := na
+        s4_signalFired        := false
+    float highestHighBeforeThisBar = nz(s4_highestHighOfWeek)
+    if not na(s4_firstHourHigh) and not s4_signalFired and barstate.isconfirmed
+        bool isDayOne = dayofweek == s4_firstHourDay
+        if isDayOne
+            if close > s4_firstHourHigh
+                s4_trigger   := 1
+                s4_signalFired := true
+        else
+            if na(s4_breakoutCandleHigh)
+                bool isGreen              = close > open
+                bool isAboveFirstHourHigh = close > s4_firstHourHigh
+                bool isNewWeeklyHigh      = high >= highestHighBeforeThisBar
+                if isGreen and isAboveFirstHourHigh and isNewWeeklyHigh
+                    s4_breakoutCandleHigh := high
+            else
+                if close > s4_breakoutCandleHigh
+                    s4_trigger   := 1
+                    s4_signalFired := true
+    s4_highestHighOfWeek := math.max(highestHighBeforeThisBar, high)
+    s4_trigger
+
+f_s8_logic() =>
+    var float s8_firstHourLow = na
+    var int   s8_firstHourDay = na
+    var float s8_lowestLowOfWeek = na
+    var float s8_breakdownCandleLow = na
+    var bool  s8_signalFired = false
+    int       s8_trigger     = 0
+    if timeframe.change("W")
+        s8_firstHourLow       := low
+        s8_firstHourDay       := dayofweek
+        s8_lowestLowOfWeek    := low
+        s8_breakdownCandleLow := na
+        s8_signalFired        := false
+    float lowestLowBeforeThisBar = nz(s8_lowestLowOfWeek)
+    if not na(s8_firstHourLow) and not s8_signalFired and barstate.isconfirmed
+        bool isDayOne = dayofweek == s8_firstHourDay
+        if isDayOne
+            if close < s8_firstHourLow
+                s8_trigger   := 1
+                s8_signalFired := true
+        else
+            if na(s8_breakdownCandleLow)
+                bool isRed                 = close < open
+                bool isBelowFirstHourLow   = close < s8_firstHourLow
+                bool isNewWeeklyLow        = low <= lowestLowBeforeThisBar
+                if isRed and isBelowFirstHourLow and isNewWeeklyLow
+                    s8_breakdownCandleLow := low
+            else
+                if close < s8_breakdownCandleLow
+                    s8_trigger   := 1
+                    s8_signalFired := true
+    s8_lowestLowOfWeek := math.min(lowestLowBeforeThisBar, low)
+    s8_trigger
+
+f_get_weekly_1h_maxes() =>
+    var float weekly_max_high = na
+    var float weekly_max_close = na
+    if timeframe.change("W")
+        weekly_max_high := high
+        weekly_max_close := close
+    else
+        weekly_max_high := math.max(nz(weekly_max_high[1], high), high)
+        weekly_max_close := math.max(nz(weekly_max_close[1], close), close)
+    [weekly_max_high, weekly_max_close]
+
+f_get_weekly_1h_mins() =>
+    var float weekly_min_low = na
+    var float weekly_min_close = na
+    if timeframe.change("W")
+        weekly_min_low := low
+        weekly_min_close := close
+    else
+        weekly_min_low := math.min(nz(weekly_min_low[1], low), low)
+        weekly_min_close := math.min(nz(weekly_min_close[1], close), close)
+    [weekly_min_low, weekly_min_close]
+
+f_logTrade(signalId, direction, stopLoss) =>
+    weekStartTimestamp = time - (dayofweek(time) - dayofweek.monday) * 86400000
+    weekStartDateStr = str.format("{0,date,yyyy-MM-dd}", weekStartTimestamp)
+    newTrade = TradeLog.new(weekStartDateStr, signalId, direction, stopLoss, time, "OPEN", na)
+    array.push(tradeLogArray, newTrade)
+
+// --- FETCH DATA ---
+wd   = request.security(syminfo.tickerid, "W", f_weekData(), lookahead=barmerge.lookahead_off)[1]
+closeW = request.security(syminfo.tickerid, "W", close,       lookahead=barmerge.lookahead_off)[1]
+s4_trigger_from_1h = request.security(syminfo.tickerid, "60", f_s4_logic(), lookahead=barmerge.lookahead_off)
+s8_trigger_from_1h = request.security(syminfo.tickerid, "60", f_s8_logic(), lookahead=barmerge.lookahead_off)
+[weekly_1h_max_high, weekly_1h_max_close] = request.security(syminfo.tickerid, "60", f_get_weekly_1h_maxes(), lookahead=barmerge.lookahead_off)
+[weekly_1h_min_low, weekly_1h_min_close] = request.security(syminfo.tickerid, "60", f_get_weekly_1h_mins(), lookahead=barmerge.lookahead_off)
+
+
+// === NEW WEEK LOGIC ===
+newWeek = timeframe.change("W")
+if newWeek
+    prevHigh     := wd.high
+    prevLow      := wd.low
+    prevMax4h    := wd.max4h
+    prevMin4h    := wd.min4h
+    prevClose    := closeW
+    box.delete(upperZoneBox)
+    box.delete(lowerZoneBox)
+    upperZTop    := math.max(prevHigh, prevMax4h)
+    upperZBottom := math.min(prevHigh, prevMax4h)
+    lowerZTop    := math.max(prevLow,  prevMin4h)
+    lowerZBottom := math.min(prevLow,  prevMin4h)
+    upperZoneBox := box.new(bar_index, upperZTop, bar_index + 1, upperZBottom, bgcolor=color.new(color.red,85), border_color=na, extend=extend.right)
+    lowerZoneBox := box.new(bar_index, lowerZTop, bar_index + 1, lowerZBottom, bgcolor=color.new(color.blue,85), border_color=na, extend=extend.right)
+    float dH = math.abs(prevClose - prevMax4h)
+    float dL = math.abs(prevClose - prevMin4h)
+    weeklySig := dH < dL ? -1 : dL < dH ? 1 : 0
+    marginLow  := math.max((lowerZTop - lowerZBottom) * 3, syminfo.mintick * 5)
+    marginHigh := math.max((upperZTop - upperZBottom) * 3, syminfo.mintick * 5)
+    newWeekBarIndex := bar_index
+
+    if showWeeklyBias
+        if weeklySig == -1
+            label.new(bar_index, upperZTop + marginHigh, "(Bear)", style=label.style_label_down, color=color.new(color.red,25), textcolor=color.white, tooltip="Bearish Bias")
+        else if weeklySig == 1
+            label.new(bar_index, lowerZBottom - marginLow, "(Bull)", style=label.style_label_up, color=color.new(color.green,25), textcolor=color.white, tooltip="Bullish Bias")
+
+    firstBarOpen  := open
+    firstBarHigh  := high
+    firstBarLow   := low
+    firstBarClose := close
+    [fhH, fhL, fhC] = request.security(syminfo.tickerid, "60", [high, low, close], lookahead=barmerge.lookahead_off)
+    firstHourHigh  := fhH
+    firstHourLow   := fhL
+    firstHourClose := fhC
+    a_signal_has_fired_this_week := false
+
+// === SIGNALS & TRADE EXECUTION ===
+isSecond = ta.barssince(newWeek) == 1
+expiryDayOfWeek = f_getExpiryDayOfWeek(expiryDay)
+
+// --- Signal 1: Bear Trap ---
+if not a_signal_has_fired_this_week and showS1 and isSecond and firstBarOpen >= lowerZBottom and firstBarClose < lowerZBottom and close > firstBarLow and barstate.isconfirmed
+    label.new(bar_index, lowerZBottom - (marginLow * 0.5), "S1: Bear Trap", style=label.style_label_up, color=color.new(color.green,0), textcolor=color.white)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = firstBarLow - math.abs(firstBarOpen - firstBarClose)
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "PE", "signal": "S1", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice - marginLow, text=alertMessage, style=label.style_label_up, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S1", 1, stopLossPrice)
+
+// --- Signal 2: Support Hold (Bullish) ---
+if not a_signal_has_fired_this_week and showS2 and isSecond and firstBarOpen > prevLow and math.abs(prevClose - lowerZBottom) <= marginLow and math.abs(firstBarOpen - lowerZBottom) <= marginLow and firstBarClose >= lowerZBottom and firstBarClose >= prevClose and close >= firstBarLow and close > prevClose and close > lowerZBottom and weeklySig == 1 and barstate.isconfirmed
+    label.new(bar_index, lowerZBottom - marginLow * 2, "S2: Support Hold (Bullish)", style=label.style_label_up, color=color.new(color.lime,0), textcolor=color.black)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = lowerZBottom
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "PE", "signal": "S2", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice - marginLow, text=alertMessage, style=label.style_label_up, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S2", 1, stopLossPrice)
+
+// --- Signal 3: Resistance Hold (Bearish) ---
+// Base conditions for S3 signal
+bool s3_base_conditions = not a_signal_has_fired_this_week and
+                         showS3 and
+                         weeklySig == -1 and
+                         math.abs(prevClose - upperZBottom) <= marginHigh and
+                         math.abs(firstBarOpen - upperZBottom) <= marginHigh and
+                         firstBarClose <= prevHigh and
+                         barstate.isconfirmed
+
+// Scenario A: Inside candle on the 2nd bar, closing below resistance zone
+bool s3_scenario_A = isSecond and
+                     close < firstBarHigh and
+                     close < upperZBottom and
+                     (firstBarHigh >= upperZBottom or high >= upperZBottom)
+
+// Scenario B: Breakdown below the 1st bar's low with extra confirmation
+bool s3_scenario_B = close < firstBarLow and
+                     close < upperZBottom and
+                     close < nz(weekly_1h_min_low[1]) and
+                     close < nz(weekly_1h_min_close[1])
+
+if s3_base_conditions and (s3_scenario_A or s3_scenario_B)
+    label.new(bar_index, upperZTop + marginHigh * 2, "S3: Resistance Hold (Bearish)", style=label.style_label_down, color=color.new(color.red,0), textcolor=color.white)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = prevHigh
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "CE", "signal": "S3", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice + marginHigh, text=alertMessage, style=label.style_label_down, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S3", -1, stopLossPrice)
+
+// --- Signal 4: Bias Failure (Bullish) ---
+s4_final_trigger = s4_trigger_from_1h == 1 and nz(s4_trigger_from_1h[1]) != 1
+if not a_signal_has_fired_this_week and showS4 and s4_final_trigger and weeklySig == -1 and firstBarOpen > upperZTop
+    label.new(bar_index, low, "S4: Bias Failure (Bullish)", style=label.style_label_up, color=color.new(color.teal, 0), textcolor=color.white, tooltip="Bearish bias failed. Confirmed by hybrid 1H breakout logic.")
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = firstHourLow
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "PE", "signal": "S4", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice - marginLow, text=alertMessage, style=label.style_label_up, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S4", 1, stopLossPrice)
+
+// --- Signal 5: Bias Failure (Bearish) ---
+if not a_signal_has_fired_this_week and showS5 and not na(firstHourLow) and barstate.isconfirmed and weeklySig == 1 and firstBarOpen < lowerZBottom and firstHourClose < lowerZBottom and firstHourClose < prevLow and close < firstHourLow
+    label.new(bar_index, high, "S5: Bias Failure (Bearish)", style=label.style_label_down, color=color.new(color.orange, 0), textcolor=color.white, tooltip="Bullish bias failed on a gap down, sustain, and breakdown.")
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = firstHourHigh
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "CE", "signal": "S5", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice + marginHigh, text=alertMessage, style=label.style_label_down, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S5", -1, stopLossPrice)
+
+// --- Signal 6: Weakness Confirmed ---
+// Base conditions for S6 signal
+bool s6_base_conditions = not a_signal_has_fired_this_week and
+                         showS6 and
+                         weeklySig == -1 and
+                         firstBarHigh >= upperZBottom and
+                         firstBarClose <= upperZTop and
+                         firstBarClose <= prevHigh and
+                         barstate.isconfirmed
+
+// Scenario A: Inside candle on the 2nd bar, closing below resistance zone
+bool s6_scenario_A = isSecond and
+                     close < firstBarHigh and
+                     close < upperZBottom
+
+// Scenario B: Breakdown below the 1st bar's low with extra confirmation
+bool s6_scenario_B = close < firstBarLow and
+                     close < upperZBottom and
+                     close < nz(weekly_1h_min_low[1]) and
+                     close < nz(weekly_1h_min_close[1])
+
+if s6_base_conditions and (s6_scenario_A or s6_scenario_B)
+    label.new(bar_index, upperZTop + marginHigh * 2.5, "S6: Weakness Confirmed", style=label.style_label_down, color=color.new(color.fuchsia,0), textcolor=color.white)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = prevHigh
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "CE", "signal": "S6", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice + marginHigh, text=alertMessage, style=label.style_label_down, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S6", -1, stopLossPrice)
+
+// --- Signal 7: 1H Breakout Confirmed ---
+bool s7_is_too_close_below = close < prevHigh and ((prevHigh - close) / close * 100) < 0.40
+bool s7_is_valid_location = not s7_is_too_close_below
+bool s7_is_strongest_breakout = close > nz(weekly_1h_max_high[1]) and close > nz(weekly_1h_max_close[1])
+
+if not a_signal_has_fired_this_week and showS7 and s4_final_trigger and s7_is_valid_location and s7_is_strongest_breakout
+    label.new(bar_index, low - marginLow, "S7: 1H Breakout Confirmed", style=label.style_label_up, color=color.new(color.aqua,0), textcolor=color.black)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = firstHourLow
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "PE", "signal": "S7", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice - marginLow, text=alertMessage, style=label.style_label_up, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S7", 1, stopLossPrice)
+
+// --- Signal 8: 1H Breakdown Confirmed ---
+s8_final_trigger = s8_trigger_from_1h == 1 and nz(s8_trigger_from_1h[1]) != 1
+s8_touched_upper_zone = high >= upperZBottom
+s8_closed_below_resistance = close < upperZBottom
+s8_is_weakest_breakdown = close < nz(weekly_1h_min_low[1]) and close < nz(weekly_1h_min_close[1])
+
+if not a_signal_has_fired_this_week and showS8 and s8_final_trigger and s8_touched_upper_zone and s8_closed_below_resistance and s8_is_weakest_breakdown
+    label.new(bar_index, high + marginHigh, "S8: 1H Breakdown Confirmed", style=label.style_label_down, color=color.new(color.maroon, 0), textcolor=color.white)
+    a_signal_has_fired_this_week := true
+    float stopLossPrice = firstHourHigh
+    line.new(x1=bar_index, y1=stopLossPrice, x2=bar_index + 10, y2=stopLossPrice, color=color.orange, style=line.style_dashed, width=2)
+    label.new(x=bar_index, y=stopLossPrice, text="SL", style=label.style_label_right, color=color.new(color.white, 100), textcolor=color.orange, size=size.small)
+    float strikePrice = f_round_to_100(stopLossPrice)
+    string alertMessage = '{"strike": ' + str.tostring(strikePrice) + ', "type": "CE", "signal": "S8", "action": "Entry"}'
+    alert(alertMessage, alert.freq_once_per_bar_close)
+    if showJsonOnChart
+        label.new(bar_index, stopLossPrice + marginHigh, text=alertMessage, style=label.style_label_down, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+    f_logTrade("S8", -1, stopLossPrice)
+
+// === TRADE MANAGEMENT LOGIC FOR DASHBOARD ===
+if array.size(tradeLogArray) > 0
+    lastTrade = array.get(tradeLogArray, array.size(tradeLogArray) - 1)
+    if lastTrade.outcome == "OPEN"
+        tradeWeek = weekofyear(lastTrade.entryTime)
+        tradeYear = year(lastTrade.entryTime)
+        currentWeek = weekofyear(time)
+        currentYear = year(time)
+
+        // Check if the trade is still in the same week
+        if tradeYear == currentYear and tradeWeek == currentWeek
+            isBeforeOrOnExpiry = dayofweek <= expiryDayOfWeek
+            if isBeforeOrOnExpiry
+                sl_hit = (lastTrade.direction == 1 and close <= lastTrade.stopLoss) or (lastTrade.direction == -1 and close >= lastTrade.stopLoss)
+                if sl_hit
+                    lastTrade.outcome := "LOSS"
+                    lastTrade.exitTime := time
+                    array.set(tradeLogArray, array.size(tradeLogArray) - 1, lastTrade)
+                    label.new(bar_index, lastTrade.direction == 1 ? lastTrade.stopLoss - marginLow : lastTrade.stopLoss + marginHigh, "SL Hit", style=label.style_label_left, color=color.red, textcolor=color.white)
+                    
+                    // SL Alert Logic
+                    float slStrikePrice = f_round_to_100(lastTrade.stopLoss)
+                    string slOptionType = lastTrade.direction == 1 ? "PE" : "CE"
+                    string slSignalName = lastTrade.signalId
+                    string slAlertMessage = '{"strike": ' + str.tostring(slStrikePrice) + ', "type": "' + slOptionType + '", "signal": "' + slSignalName + '", "action": "Stoploss"}'
+                    alert(slAlertMessage, alert.freq_once_per_bar_close)
+                    if showJsonOnChart
+                        label.new(bar_index, lastTrade.direction == 1 ? lastTrade.stopLoss - marginLow * 1.5 : lastTrade.stopLoss + marginHigh * 1.5, text=slAlertMessage, style=lastTrade.direction == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.yellow, 25), textcolor=color.black, size=size.small)
+
+
+        // If a new week has started, the previous week's open trade is a WIN
+        if currentYear > tradeYear or (currentYear == tradeYear and currentWeek > tradeWeek)
+            lastTrade.outcome := "WIN"
+            // Set exit time to the close of the last bar of its week
+            lastTrade.exitTime := time[1] 
+            array.set(tradeLogArray, array.size(tradeLogArray) - 1, lastTrade)
+
+// On the very last bar of the chart, check if the last trade is still open
+if barstate.islast and array.size(tradeLogArray) > 0
+    lastTrade = array.get(tradeLogArray, array.size(tradeLogArray) - 1)
+    if lastTrade.outcome == "OPEN"
+        // If it's past the expiry day, it's a win
+        if dayofweek >= expiryDayOfWeek
+            lastTrade.outcome := "WIN"
+            lastTrade.exitTime := time
+            array.set(tradeLogArray, array.size(tradeLogArray) - 1, lastTrade)
+
+
+// === PLOT HISTORICAL LEVELS ===
+plot(prevHigh,  title="Prev W High",       color=color.new(color.red, 50),   style=plot.style_circles, linewidth=2)
+plot(prevLow,   title="Prev W Low",        color=color.new(color.blue, 50),  style=plot.style_circles, linewidth=2)
+plot(prevMax4h, title="Prev W 4H MaxBody", color=color.new(color.maroon, 50),style=plot.style_circles, linewidth=1)
+plot(prevMin4h, title="Prev W 4H MinBody", color=color.new(color.navy, 50),  style=plot.style_circles, linewidth=1)
+plot(prevClose, title="Prev W Close",      color=color.new(color.green, 50), style=plot.style_circles, linewidth=2)
+
+
+// === P&L DASHBOARD DRAWING LOGIC ===
+var tradeLogTable = table.new(position.top_right, 1, 1)
+var summaryTable = table.new(position.bottom_right, 1, 1)
+
+if barstate.islast and showDashboard and dashboardView != "None"
+
+    TradeLog[] filteredTrades = array.new<TradeLog>()
+    [startMonth, endMonth] = f_getQuarterMonths(dashboardMonth)
+
+    if array.size(tradeLogArray) > 0
+        for trade in tradeLogArray
+            tradeYear = year(trade.entryTime)
+            tradeMonth = month(trade.entryTime)
+
+            bool yearMatch = tradeYear == dashboardYear
+            bool monthMatch = dashboardMonth == "All" or (tradeMonth >= startMonth and tradeMonth <= endMonth)
+
+            if yearMatch and monthMatch and trade.outcome != "OPEN"
+                array.push(filteredTrades, trade)
+
+    noTradesMessage = "No trades found for " + (dashboardMonth == "All" ? "" : dashboardMonth + " ") + str.tostring(dashboardYear)
+
+    if dashboardView == "Trade Log"
+        table.delete(tradeLogTable)
+        table.delete(summaryTable)
+        if array.size(filteredTrades) > 0
+            tradeLogTable := table.new(position.top_right, 6, array.size(filteredTrades) + 1, border_width=1)
+            table.cell(tradeLogTable, 0, 0, "Week Start", bgcolor=color.gray, text_color=color.white)
+            table.cell(tradeLogTable, 1, 0, "Signal", bgcolor=color.gray, text_color=color.white)
+            table.cell(tradeLogTable, 2, 0, "Direction", bgcolor=color.gray, text_color=color.white)
+            table.cell(tradeLogTable, 3, 0, "Entry Date", bgcolor=color.gray, text_color=color.white)
+            table.cell(tradeLogTable, 4, 0, "Outcome", bgcolor=color.gray, text_color=color.white)
+            table.cell(tradeLogTable, 5, 0, "Exit Date", bgcolor=color.gray, text_color=color.white)
+            for i = 0 to array.size(filteredTrades) - 1
+                trade = array.get(filteredTrades, i)
+                row = i + 1
+                bgColor = trade.outcome == "WIN" ? color.new(color.green, 80) : color.new(color.red, 80)
+                table.cell(tradeLogTable, 0, row, trade.weekStartDate, bgcolor=bgColor)
+                table.cell(tradeLogTable, 1, row, trade.signalId, bgcolor=bgColor)
+                table.cell(tradeLogTable, 2, row, trade.direction == 1 ? "Bullish" : "Bearish", bgcolor=bgColor)
+                table.cell(tradeLogTable, 3, row, str.format("{0,date,yyyy-MM-dd}", trade.entryTime), bgcolor=bgColor)
+                table.cell(tradeLogTable, 4, row, trade.outcome, bgcolor=bgColor)
+                table.cell(tradeLogTable, 5, row, na(trade.exitTime) ? "N/A" : str.format("{0,date,yyyy-MM-dd}", trade.exitTime), bgcolor=bgColor)
+        else
+            tradeLogTable := table.new(position.top_right, 1, 1, border_width=1)
+            table.cell(tradeLogTable, 0, 0, noTradesMessage, bgcolor=color.gray, text_color=color.white)
+
+    if dashboardView == "Performance Summary"
+        table.delete(summaryTable)
+        table.delete(tradeLogTable)
+        if array.size(filteredTrades) > 0
+            var statsMap = map.new<string, SignalStats>()
+            statsMap.clear()
+            for trade in filteredTrades
+                stats = statsMap.get(trade.signalId)
+                if na(stats)
+                    stats := SignalStats.new(trade.signalId)
+
+                stats.totalTrades += 1
+                if trade.outcome == "WIN"
+                    stats.wins += 1
+                else
+                    stats.losses += 1
+                statsMap.put(trade.signalId, stats)
+
+            summaryTable := table.new(position.bottom_right, 5, statsMap.size() + 2, border_width=1)
+            table.cell(summaryTable, 0, 0, "Signal ID", bgcolor=color.navy, text_color=color.white)
+            table.cell(summaryTable, 1, 0, "Total Trades", bgcolor=color.navy, text_color=color.white)
+            table.cell(summaryTable, 2, 0, "Wins", bgcolor=color.navy, text_color=color.white)
+            table.cell(summaryTable, 3, 0, "Losses", bgcolor=color.navy, text_color=color.white)
+            table.cell(summaryTable, 4, 0, "Win Rate %", bgcolor=color.navy, text_color=color.white)
+
+            int row = 1
+            int totalTradesAll = 0
+            int totalWinsAll = 0
+            int totalLossesAll = 0
+
+            for [key, stats] in statsMap
+                totalTradesAll += stats.totalTrades
+                totalWinsAll += stats.wins
+                totalLossesAll += stats.losses
+
+                winRate = stats.totalTrades > 0 ? (stats.wins / stats.totalTrades) * 100 : 0
+                bgColor = winRate >= 50 ? color.new(color.teal, 85) : color.new(color.maroon, 85)
+
+                table.cell(summaryTable, 0, row, stats.id, bgcolor=bgColor)
+                table.cell(summaryTable, 1, row, str.tostring(stats.totalTrades), bgcolor=bgColor)
+                table.cell(summaryTable, 2, row, str.tostring(stats.wins), bgcolor=bgColor)
+                table.cell(summaryTable, 3, row, str.tostring(stats.losses), bgcolor=bgColor)
+                table.cell(summaryTable, 4, row, str.tostring(winRate, "##.##'%'"), bgcolor=bgColor)
+                row += 1
+
+            winRateAll = totalTradesAll > 0 ? (totalWinsAll / totalTradesAll) * 100 : 0
+            bgColorAll = winRateAll >= 50 ? color.new(color.blue, 70) : color.new(color.red, 70)
+
+            table.cell(summaryTable, 0, row, "OVERALL", bgcolor=bgColorAll, text_color=color.white)
+            table.cell(summaryTable, 1, row, str.tostring(totalTradesAll), bgcolor=bgColorAll, text_color=color.white)
+            table.cell(summaryTable, 2, row, str.tostring(totalWinsAll), bgcolor=bgColorAll, text_color=color.white)
+            table.cell(summaryTable, 3, row, str.tostring(totalLossesAll), bgcolor=bgColorAll, text_color=color.white)
+            table.cell(summaryTable, 4, row, str.tostring(winRateAll, "##.##'%'"), bgcolor=bgColorAll, text_color=color.white)
+        else
+            summaryTable := table.new(position.bottom_right, 1, 1, border_width=1)
+            table.cell(summaryTable, 0, 0, noTradesMessage, bgcolor=color.navy, text_color=color.white)

@@ -12,3 +12,81 @@
 2025-07-06 18:33:10.348 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
 2025-07-06 18:33:11.035 +05:30 [INF] HTTP GET /swagger/index.html responded 200 in 141.7718 ms
 2025-07-06 18:33:11.239 +05:30 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 20.8303 ms
+2025-07-06 23:24:43.927 +05:30 [INF] Now listening on: https://localhost:7178
+2025-07-06 23:24:44.010 +05:30 [INF] Now listening on: http://localhost:5192
+2025-07-06 23:24:44.535 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2025-07-06 23:24:44.541 +05:30 [INF] Hosting environment: Development
+2025-07-06 23:24:44.544 +05:30 [INF] Content root path: D:\New folder\KiteConnectApi
+2025-07-06 23:24:45.301 +05:30 [INF] HTTP GET /swagger/index.html responded 200 in 186.5474 ms
+2025-07-06 23:24:45.575 +05:30 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 25.0979 ms
+2025-07-06 23:49:07.905 +05:30 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2025-07-06 23:49:07.964 +05:30 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsLock' AND "type" = 'table';
+2025-07-06 23:49:07.977 +05:30 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT OR IGNORE INTO "__EFMigrationsLock"("Id", "Timestamp") VALUES(1, '2025-07-06 18:19:07.9685416+00:00');
+SELECT changes();
+2025-07-06 23:49:08.011 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+    "ProductVersion" TEXT NOT NULL
+);
+2025-07-06 23:49:08.019 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+2025-07-06 23:49:08.020 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT "MigrationId", "ProductVersion"
+FROM "__EFMigrationsHistory"
+ORDER BY "MigrationId";
+2025-07-06 23:49:08.026 +05:30 [INF] Applying migration '20250706181851_UpdatedTradePosition'.
+2025-07-06 23:49:08.037 +05:30 [WRN] The migration operation 'PRAGMA foreign_keys = 0;
+' from migration 'UpdatedTradePosition' cannot be executed in a transaction. If the app is terminated or an unrecoverable error occurs while this operation is being executed then the migration will be left in a partially applied state and would need to be reverted manually before it can be applied again. Create a separate migration that contains just this operation.
+2025-07-06 23:49:08.037 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "TradePositions" ADD "NetPremium" REAL NOT NULL DEFAULT 0.0;
+2025-07-06 23:49:08.037 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "TradePositions" ADD "StopLossOrderId" TEXT NULL;
+2025-07-06 23:49:08.038 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "TradePositions" ADD "StopLossPrice" REAL NULL;
+2025-07-06 23:49:08.038 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "TradePositions" ADD "TakeProfitOrderId" TEXT NULL;
+2025-07-06 23:49:08.038 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "TradePositions" ADD "TakeProfitPrice" REAL NULL;
+2025-07-06 23:49:08.038 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE "ef_temp_TradePositions" (
+    "PositionId" TEXT NOT NULL CONSTRAINT "PK_TradePositions" PRIMARY KEY,
+    "EntryInstrumentToken" INTEGER NOT NULL,
+    "EntryOrderId" TEXT NULL,
+    "EntryPrice" REAL NOT NULL,
+    "EntryTime" TEXT NOT NULL,
+    "EntryTradingSymbol" TEXT NOT NULL,
+    "ExitTime" TEXT NULL,
+    "Expiry" TEXT NOT NULL,
+    "HedgeInstrumentToken" INTEGER NOT NULL,
+    "HedgeOrderId" TEXT NULL,
+    "HedgePrice" REAL NOT NULL,
+    "HedgeTradingSymbol" TEXT NOT NULL,
+    "NetPremium" REAL NOT NULL,
+    "OptionType" TEXT NOT NULL,
+    "Quantity" INTEGER NOT NULL,
+    "Status" TEXT NOT NULL,
+    "StopLossOrderId" TEXT NULL,
+    "StopLossPrice" REAL NULL,
+    "Strike" INTEGER NOT NULL,
+    "TakeProfitOrderId" TEXT NULL,
+    "TakeProfitPrice" REAL NULL
+);
+2025-07-06 23:49:08.038 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "ef_temp_TradePositions" ("PositionId", "EntryInstrumentToken", "EntryOrderId", "EntryPrice", "EntryTime", "EntryTradingSymbol", "ExitTime", "Expiry", "HedgeInstrumentToken", "HedgeOrderId", "HedgePrice", "HedgeTradingSymbol", "NetPremium", "OptionType", "Quantity", "Status", "StopLossOrderId", "StopLossPrice", "Strike", "TakeProfitOrderId", "TakeProfitPrice")
+SELECT "PositionId", "EntryInstrumentToken", "EntryOrderId", "EntryPrice", "EntryTime", "EntryTradingSymbol", "ExitTime", "Expiry", "HedgeInstrumentToken", "HedgeOrderId", "HedgePrice", "HedgeTradingSymbol", "NetPremium", "OptionType", "Quantity", "Status", "StopLossOrderId", "StopLossPrice", "Strike", "TakeProfitOrderId", "TakeProfitPrice"
+FROM "TradePositions";
+2025-07-06 23:49:08.042 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA foreign_keys = 0;
+2025-07-06 23:49:08.042 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DROP TABLE "TradePositions";
+2025-07-06 23:49:08.043 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+ALTER TABLE "ef_temp_TradePositions" RENAME TO "TradePositions";
+2025-07-06 23:49:08.045 +05:30 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+PRAGMA foreign_keys = 1;
+2025-07-06 23:49:08.048 +05:30 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20250706181851_UpdatedTradePosition', '9.0.6');
+2025-07-06 23:49:08.051 +05:30 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DELETE FROM "__EFMigrationsLock";

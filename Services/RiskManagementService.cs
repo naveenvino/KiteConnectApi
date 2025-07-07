@@ -1,6 +1,5 @@
 using KiteConnectApi.Models.Trading;
 using KiteConnectApi.Repositories;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,35 +11,51 @@ namespace KiteConnectApi.Services
         private readonly IPositionRepository _positionRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly RiskParameters _riskParameters;
-        private readonly ILogger<RiskManagementService> _logger;
 
-        public RiskManagementService(
-            IPositionRepository positionRepository,
-            IOrderRepository orderRepository,
-            IOptions<RiskParameters> riskParameters,
-            ILogger<RiskManagementService> logger)
+        public RiskManagementService(IPositionRepository positionRepository, IOrderRepository orderRepository, IOptions<RiskParameters> riskParameters)
         {
             _positionRepository = positionRepository;
             _orderRepository = orderRepository;
             _riskParameters = riskParameters.Value;
-            _logger = logger;
         }
 
-        public async Task<bool> CheckTradeAllowed(string tradeType, decimal potentialLoss = 0)
+        public async Task<bool> CanPlaceOrder(string tradingSymbol, int quantity, decimal price)
         {
-            // Check max open positions
-            var openPositions = await _positionRepository.GetOpenPositionsAsync();
-            if (openPositions.Count() >= _riskParameters.MaxOpenPositions)
+            var positions = await _positionRepository.GetOpenPositionsAsync();
+            var openOrders = await _orderRepository.GetOpenOrdersAsync();
+
+            if (positions.Count() >= _riskParameters.MaxOpenPositions)
             {
-                _logger.LogWarning($"Trade not allowed: Max open positions ({_riskParameters.MaxOpenPositions}) reached.");
                 return false;
             }
 
-            // Implement more sophisticated risk checks here, e.g., daily loss, per-trade loss
-            // For now, a simple check on open positions.
+            var totalValue = positions.Sum(p => p.Quantity * p.AveragePrice);
+            var newOrderValue = quantity * price;
 
-            _logger.LogInformation($"Trade allowed: Current open positions: {openPositions.Count()}");
+            if ((totalValue + newOrderValue) > _riskParameters.MaxExposure)
+            {
+                return false;
+            }
+
             return true;
+        }
+
+        public async Task<bool> ShouldSquareOff()
+        {
+            var positions = await _positionRepository.GetOpenPositionsAsync();
+            var totalPnl = positions.Sum(p => p.PnL);
+
+            if (totalPnl <= _riskParameters.MaxLoss)
+            {
+                return true;
+            }
+
+            if (totalPnl >= _riskParameters.MaxProfit)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

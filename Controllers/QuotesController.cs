@@ -9,9 +9,9 @@ namespace KiteConnectApi.Controllers
     [Route("api/[controller]")]
     public class QuotesController : ControllerBase
     {
-        private readonly KiteConnectService _kiteConnectService;
+        private readonly IKiteConnectService _kiteConnectService;
 
-        public QuotesController(KiteConnectService kiteConnectService)
+        public QuotesController(IKiteConnectService kiteConnectService)
         {
             _kiteConnectService = kiteConnectService;
         }
@@ -19,22 +19,27 @@ namespace KiteConnectApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetQuotes([FromQuery] string[] instruments)
         {
-            var quotes = await _kiteConnectService.GetQuoteAsync(instruments);
+            if (instruments == null || instruments.Length == 0)
+            {
+                return BadRequest("Instrument list cannot be empty.");
+            }
+            var quotes = await _kiteConnectService.GetQuotesAsync(instruments);
             return Ok(quotes);
         }
 
-        [HttpGet("ohlc")]
-        public async Task<IActionResult> GetOHLC([FromQuery] string[] instruments)
-        {
-            var ohlc = await _kiteConnectService.GetOHLCAsync(instruments);
-            return Ok(ohlc);
-        }
-
         [HttpGet("historical")]
-        public async Task<IActionResult> GetHistoricalData([FromQuery] string instrument_token, [FromQuery] string from_date, [FromQuery] string to_date, [FromQuery] string interval)
+        public async Task<IActionResult> GetHistoricalData(
+            [FromQuery] string instrumentToken,
+            [FromQuery] DateTime from,
+            [FromQuery] DateTime to,
+            [FromQuery] string interval)
         {
-            // Error CS1061: Renamed 'GetHistoricalData' to 'GetHistoricalDataAsync'.
-            var historicalData = await _kiteConnectService.GetHistoricalDataAsync(instrument_token, DateTime.Parse(from_date), DateTime.Parse(to_date), interval);
+            if (string.IsNullOrEmpty(instrumentToken))
+            {
+                return BadRequest("Instrument token is required.");
+            }
+
+            var historicalData = await _kiteConnectService.GetHistoricalDataAsync(instrumentToken, from, to, interval, false); // Added missing 'continuous' parameter
             return Ok(historicalData);
         }
     }

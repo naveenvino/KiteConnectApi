@@ -1,0 +1,81 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<div class="text-center">
+    <h1 class="display-4">KiteConnectApi Trading Dashboard</h1>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h2>Open Positions</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Position ID</th>
+                    <th>Symbol</th>
+                    <th>Quantity</th>
+                    <th>Net Premium</th>
+                    <th>Current PnL</th>
+                </tr>
+            </thead>
+            <tbody id="openPositionsTableBody">
+                <!-- Data will be loaded here by SignalR -->
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h2>Recent Logs</h2>
+        <div id="logMessages" style="height: 400px; overflow-y: scroll; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+            <!-- Log messages will be appended here -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/marketdata")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        connection.on("ReceivePnlUpdate", (pnlUpdates) => {
+            const tableBody = document.getElementById("openPositionsTableBody");
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            pnlUpdates.forEach(pnl => {
+                const row = tableBody.insertRow();
+                row.insertCell().innerText = pnl.positionId.substring(0, 8) + '...';
+                row.insertCell().innerText = pnl.netPremium.toFixed(2);
+                row.insertCell().innerText = pnl.currentNetPremium.toFixed(2);
+                row.insertCell().innerText = pnl.currentPnl.toFixed(2);
+            });
+        });
+
+        connection.on("ReceiveMessage", (message) => {
+            const logMessages = document.getElementById("logMessages");
+            const p = document.createElement("p");
+            p.innerText = `[Hub] ${message}`;
+            logMessages.appendChild(p);
+            logMessages.scrollTop = logMessages.scrollHeight;
+        });
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                connection.invoke("SubscribeToPnl").catch(err => console.error(err.toString()));
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        start();
+    </script>
+}

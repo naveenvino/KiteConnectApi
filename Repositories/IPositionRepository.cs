@@ -6,11 +6,12 @@ namespace KiteConnectApi.Repositories
 {
     public interface IPositionRepository
     {
-        Task<TradePosition> GetPositionByIdAsync(string positionId);
+        Task<TradePosition?> GetPositionByIdAsync(string positionId);
         Task<IEnumerable<TradePosition>> GetAllPositionsAsync();
         Task AddPositionAsync(TradePosition position);
         Task UpdatePositionAsync(TradePosition position);
         Task DeletePositionAsync(string positionId);
         Task<IEnumerable<TradePosition>> GetOpenPositionsAsync();
+        Task<IEnumerable<TradePosition>> GetPendingPositionsAsync();
     }
 }

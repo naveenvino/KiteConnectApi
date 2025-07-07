@@ -16,7 +16,7 @@ namespace KiteConnectApi.Repositories
             _context = context;
         }
 
-        public async Task<TradePosition> GetPositionByIdAsync(string positionId)
+        public async Task<TradePosition?> GetPositionByIdAsync(string positionId)
         {
             return await _context.TradePositions.FindAsync(positionId);
         }
@@ -51,6 +51,11 @@ namespace KiteConnectApi.Repositories
         public async Task<IEnumerable<TradePosition>> GetOpenPositionsAsync()
         {
             return await _context.TradePositions.Where(p => p.Status == "Open").ToListAsync();
+        }
+
+        public async Task<IEnumerable<TradePosition>> GetPendingPositionsAsync()
+        {
+            return await _context.TradePositions.Where(p => p.Status == "Pending" || p.Status == "Pending Closure").ToListAsync();
         }
     }
 }

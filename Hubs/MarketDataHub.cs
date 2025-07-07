@@ -1,22 +1,27 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
+using KiteConnectApi.Models.Dto;
+using System.Collections.Generic;
 
 namespace KiteConnectApi.Hubs
 {
     public class MarketDataHub : Hub
     {
-        public async Task Subscribe(int[] instrumentTokens)
+        public async Task SubscribeToPnl()
         {
-            // This method will be called by clients to subscribe to instruments
-            // The actual subscription logic will be in MarketDataService
-            await Clients.Caller.SendAsync("ReceiveMessage", "Subscribed to instruments: " + string.Join(", ", instrumentTokens));
+            await Groups.AddToGroupAsync(Context.ConnectionId, "PNL_Subscribers");
+            await Clients.Caller.SendAsync("ReceiveMessage", "Subscribed to PnL updates.");
         }
 
-        public async Task Unsubscribe(int[] instrumentTokens)
+        public async Task UnsubscribeFromPnl()
         {
-            // This method will be called by clients to unsubscribe from instruments
-            // The actual unsubscription logic will be in MarketDataService
-            await Clients.Caller.SendAsync("ReceiveMessage", "Unsubscribed from instruments: " + string.Join(", ", instrumentTokens));
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "PNL_Subscribers");
+            await Clients.Caller.SendAsync("ReceiveMessage", "Unsubscribed from PnL updates.");
+        }
+
+        public async Task BroadcastPnlUpdate(List<PositionPnlDto> pnlUpdates)
+        {
+            await Clients.Group("PNL_Subscribers").SendAsync("ReceivePnlUpdate", pnlUpdates);
         }
     }
 }
