@@ -19,6 +19,11 @@ namespace KiteConnectApi.Services
 
         public async Task SendNotificationAsync(string subject, string message)
         {
+            await SendNotificationAsync("General", subject, message); // Call the new overload with a default event type
+        }
+
+        public async Task SendNotificationAsync(string eventType, string subject, string message)
+        {
             try
             {
                 var smtpHost = _configuration["Notification:Email:SmtpHost"];
@@ -36,12 +41,12 @@ namespace KiteConnectApi.Services
 
                     var mailMessage = new MailMessage(fromAddress, toAddress, subject, message);
                     await client.SendMailAsync(mailMessage);
-                    _logger.LogInformation($"Email notification sent: {subject}");
+                    _logger.LogInformation($"Email notification sent for event '{eventType}': {subject}");
                 }
             }
             catch (System.Exception ex)
             {
-                _logger.LogError(ex, "Failed to send email notification.");
+                _logger.LogError(ex, "Failed to send email notification for event '{EventType}'.", eventType);
             }
         }
     }

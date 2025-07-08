@@ -129,5 +129,11 @@ namespace KiteConnectApi.Services
         public Task<Dictionary<string, OHLC>> GetOHLCAsync(string[] instrumentTokens) => Task.FromResult(new Dictionary<string, OHLC>());
         public Task UpdateOrderStatusAsync(string orderId, string status, double price, string? statusMessage) => Task.CompletedTask;
         public Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType) => Task.CompletedTask;
+
+        public async Task<List<KiteConnect.Holding>> GetHoldingsAsync()
+        {
+            await Task.Yield();
+            return _kite.GetHoldings();
+        }
     }
 }

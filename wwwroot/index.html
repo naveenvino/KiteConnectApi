@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KiteConnect API Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #0056b3;
+        }
+        p {
+            font-size: 1.1em;
+        }
+        #totalCapital {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>KiteConnect API Dashboard</h1>
+        <p>Total Allocated Capital: <span id="totalCapital">Loading...</span></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/Strategy/total-allocated-capital')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('totalCapital').textContent = data.toFixed(2);
+                })
+                .catch(error => {
+                    console.error('Error fetching total allocated capital:', error);
+                    document.getElementById('totalCapital').textContent = 'Error loading data.';
+                    document.getElementById('totalCapital').classList.add('error');
+                });
+        });
+    </script>
+</body>
+</html>

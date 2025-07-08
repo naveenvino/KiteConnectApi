@@ -49,7 +49,7 @@ namespace KiteConnectApi.Services
                             var mainOrder = orders.FirstOrDefault(o => o.TransactionType == "SELL");
                             var hedgeOrder = orders.FirstOrDefault(o => o.TransactionType == "BUY");
 
-                            if (mainOrder == null || hedgeOrder == null) continue;
+                            if (mainOrder?.TradingSymbol == null || hedgeOrder?.TradingSymbol == null) continue;
 
                             // Get current prices
                             var quotes = await kiteConnectService.GetQuotesAsync(new[] { mainOrder.TradingSymbol, hedgeOrder.TradingSymbol });

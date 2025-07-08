@@ -87,5 +87,11 @@ namespace KiteConnectApi.Services
         public Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId) => Task.FromResult(new List<KiteConnect.Order>());
         public Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType) => Task.CompletedTask;
         public Task<Dictionary<string, OHLC>> GetOHLCAsync(string[] instruments) => Task.FromResult(new Dictionary<string, OHLC>());
+
+        public Task<List<KiteConnect.Holding>> GetHoldingsAsync()
+        {
+            // Return an empty list or a mock list of holdings for simulation
+            return Task.FromResult(new List<KiteConnect.Holding>());
+        }
     }
 }

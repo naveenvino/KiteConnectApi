@@ -73,6 +73,7 @@ namespace KiteConnectApi.Services
                 hedgeStrike = mainStrike - _strategyConfig.HedgeDistancePoints;
             }
 
+            if (alert.Type == null) { _logger.LogWarning("Alert type is null."); return; }
             string mainTradingSymbol = GetNiftyWeeklyOptionSymbol(mainStrike, alert.Type);
             string hedgeTradingSymbol = GetNiftyWeeklyOptionSymbol(hedgeStrike, alert.Type);
             string newPositionId = Guid.NewGuid().ToString();
@@ -106,6 +107,7 @@ namespace KiteConnectApi.Services
         {
             _logger.LogInformation("Executing STOPLOSS for Signal: {Signal}", alert.Signal);
 
+            if (alert.Signal == null) { _logger.LogWarning("Alert signal is null."); return; }
             var positionToClose = await _positionRepository.GetOpenPositionBySignalAsync(alert.Signal);
 
             if (positionToClose == null || positionToClose.PositionId == null)

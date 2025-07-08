@@ -50,7 +50,7 @@ namespace KiteConnectApi.Services
 
                                 if (matchedOrder.Status == "COMPLETE")
                                 {
-                                    await notificationService.SendNotificationAsync($"Order {order.OrderId} for {order.TradingSymbol} is complete.", "Order Execution Update");
+                                    await notificationService.SendNotificationAsync("OrderExecution", $"Order {order.OrderId} for {order.TradingSymbol} is complete.", "Order Execution Update");
                                 }
                             }
                         }

@@ -7,7 +7,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace KiteConnectApi.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {

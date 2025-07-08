@@ -11,19 +11,15 @@ using KiteConnect;
 using KiteConnectApi.Models.Trading;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var contentRoot = builder.Environment.ContentRootPath;
-var dbPath = Path.Combine(contentRoot, "KiteConnectApi.db");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"DataSource={dbPath}"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -31,24 +27,30 @@ builder.Host.UseSerilog();
 builder.Services.Configure<NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
 builder.Services.Configure<RiskParameters>(builder.Configuration.GetSection("RiskParameters"));
 
-builder.Services.AddSingleton(new Kite(builder.Configuration["Kite:ApiKey"]));
+builder.Services.AddSingleton(new Kite(Environment.GetEnvironmentVariable("KiteConnect__ApiKey"), Environment.GetEnvironmentVariable("KiteConnect__ApiSecret")));
 
 bool useSimulated = builder.Configuration.GetValue<bool>("UseSimulatedServices");
 
-// --- FIX: Always use the real repositories for database persistence ---
+// --- FIX: Ensure simulated services use simulated repositories ---
 if (useSimulated)
 {
-    // Use the simulated service for placing trades, but it will save to the real DB.
+    // Use the simulated service for placing trades and simulated repositories for data persistence.
     builder.Services.AddScoped<IKiteConnectService, SimulatedKiteConnectService>();
+    builder.Services.AddScoped<IPositionRepository, SimulatedPositionRepository>();
+    builder.Services.AddScoped<IOrderRepository, SimulatedOrderRepository>();
 }
 else
 {
-    builder.Services.AddScoped<IKiteConnectService, KiteConnectService>();
+    // Use the real KiteConnectService and real repositories for live trading.
+    builder.Services.AddScoped<KiteConnectService>(); // Register the concrete implementation
+    builder.Services.AddScoped<IKiteConnectService, KiteConnectPolicyService>(provider =>
+        new KiteConnectPolicyService(provider.GetRequiredService<KiteConnectService>(), provider.GetRequiredService<ILogger<KiteConnectPolicyService>>()));
+    builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IStrategyConfigRepository, StrategyConfigRepository>();
+builder.Services.AddScoped<StrategyManagerService>();
+builder.Services.AddScoped<PortfolioAllocationService>();
 }
-
-// Repositories are always scoped to the request and use the database.
-builder.Services.AddScoped<IPositionRepository, PositionRepository>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 // --- END OF FIX ---
 
 
@@ -56,13 +58,26 @@ builder.Services.AddScoped<StrategyService>();
 builder.Services.AddScoped<RiskManagementService>();
 builder.Services.AddScoped<TechnicalAnalysisService>();
 builder.Services.AddScoped<MarketDataService>();
-builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
+builder.Services.AddScoped<IScreenerCriteriaRepository, ScreenerCriteriaRepository>();
+builder.Services.AddScoped<EmailNotificationService>();
+builder.Services.AddScoped<SmsNotificationService>();
+builder.Services.AddScoped<TelegramNotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<MarketScreenerService>();
+builder.Services.AddScoped<ExternalDataService>();
 
 builder.Services.AddHostedService<TradingStrategyMonitor>();
 builder.Services.AddHostedService<OrderMonitoringService>();
 builder.Services.AddHostedService<ExpiryDayMonitor>();
 
 builder.Services.AddControllers();
+builder.Services.AddApiVersioning(options =>
+{
+    options.ReportApiVersions = true;
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+});
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -164,6 +179,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Added to serve static files
 app.UseRouting();
 app.UseCors("AllowAll");
 

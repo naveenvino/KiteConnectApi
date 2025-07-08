@@ -2,9 +2,8 @@ namespace KiteConnectApi.Models.Dto
 {
     public class PositionPnlDto
     {
-        public string? PositionId { get; set; }
-        public double CurrentPnl { get; set; }
-        public double NetPremium { get; set; }
-        public double CurrentNetPremium { get; set; }
+        public decimal TotalRealizedPnl { get; set; }
+        public decimal TotalUnrealizedPnl { get; set; }
+        public decimal OverallPnl { get; set; }
     }
 }

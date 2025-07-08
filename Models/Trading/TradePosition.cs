@@ -11,6 +11,8 @@ namespace KiteConnectApi.Models.Trading
         public string? TradingSymbol { get; set; }
         public int Quantity { get; set; }
         public decimal AveragePrice { get; set; }
+        public decimal? Realised { get; set; }
+        public decimal? Unrealised { get; set; }
         public decimal PnL { get; set; }
         public DateTime LastUpdated { get; set; }
         public string Status { get; set; } = "";

@@ -23,5 +23,6 @@ namespace KiteConnectApi.Services
         Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId);
         Task CancelAndReplaceWithMarketOrder(string orderId, string tradingSymbol, int quantity, string transactionType);
         Task<List<TradePosition>> GetPositionsAsync();
+        Task<List<KiteConnect.Holding>> GetHoldingsAsync();
     }
 }
