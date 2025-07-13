@@ -10,8 +10,19 @@ using KiteConnectApi.Repositories;
 using KiteConnect;
 using KiteConnectApi.Models.Trading;
 using Microsoft.OpenApi.Models;
-using System.IO;
 using Microsoft.AspNetCore.Mvc;
+using Hangfire;
+using Hangfire.SqlServer;
+using Polly;
+using Polly.Extensions.Http;
+using StackExchange.Redis;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using OpenTelemetry.Trace;
+using Orleans.Hosting;
+using Orleans.Configuration;
+using KiteConnectApi; // Added for MapsterConfig
+using KiteConnectApi.ML;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +30,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -27,7 +40,7 @@ builder.Host.UseSerilog();
 builder.Services.Configure<NiftyOptionStrategyConfig>(builder.Configuration.GetSection("NiftyOptionStrategy"));
 builder.Services.Configure<RiskParameters>(builder.Configuration.GetSection("RiskParameters"));
 
-builder.Services.AddSingleton(new Kite(Environment.GetEnvironmentVariable("KiteConnect__ApiKey"), Environment.GetEnvironmentVariable("KiteConnect__ApiSecret")));
+
 
 bool useSimulated = builder.Configuration.GetValue<bool>("UseSimulatedServices");
 
@@ -42,18 +55,33 @@ if (useSimulated)
 else
 {
     // Use the real KiteConnectService and real repositories for live trading.
-    builder.Services.AddScoped<KiteConnectService>(); // Register the concrete implementation
-    builder.Services.AddScoped<IKiteConnectService, KiteConnectPolicyService>(provider =>
-        new KiteConnectPolicyService(provider.GetRequiredService<KiteConnectService>(), provider.GetRequiredService<ILogger<KiteConnectPolicyService>>()));
+    builder.Services.AddHttpClient<IKiteConnectService, KiteConnectService>()
+    .AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.WaitAndRetryAsync(new[]
+    {
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(5),
+        TimeSpan.FromSeconds(10)
+    }))
+    .AddTransientHttpErrorPolicy(policyBuilder => policyBuilder.CircuitBreakerAsync(
+        handledEventsAllowedBeforeBreaking: 3,
+        durationOfBreak: TimeSpan.FromSeconds(30)
+    ));
     builder.Services.AddScoped<IPositionRepository, PositionRepository>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IStrategyConfigRepository, StrategyConfigRepository>();
+builder.Services.AddScoped<IStrategyRepository, StrategyRepository>();
+builder.Services.AddScoped<IStrategyConfigRepository, StrategyConfigRepository>();
+builder.Services.AddScoped<IStrategyRepository, StrategyRepository>();
 builder.Services.AddScoped<StrategyManagerService>();
 builder.Services.AddScoped<PortfolioAllocationService>();
 }
 // --- END OF FIX ---
 
 
+builder.Services.AddScoped<INiftyOptionStrategyConfigRepository, NiftyOptionStrategyConfigRepository>();
+builder.Services.AddScoped<IManualTradingViewAlertRepository, ManualTradingViewAlertRepository>();
+builder.Services.AddScoped<ITradingStrategyService, TradingStrategyService>();
+builder.Services.AddScoped<BacktestingService>();
 builder.Services.AddScoped<StrategyService>();
 builder.Services.AddScoped<RiskManagementService>();
 builder.Services.AddScoped<TechnicalAnalysisService>();
@@ -66,12 +94,61 @@ builder.Services.AddScoped<TelegramNotificationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<MarketScreenerService>();
 builder.Services.AddScoped<ExternalDataService>();
+builder.Services.AddScoped<ITradeExecutionService, TradeExecutionService>();
+builder.Services.AddSingleton<PricePredictionService>();
+builder.Services.AddSingleton<VaultService>();
+
+
+builder.Services.AddSingleton<StackExchange.Redis.ConnectionMultiplexer>(sp =>
+{
+    var configuration = StackExchange.Redis.ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("RedisConnection")!);
+    return StackExchange.Redis.ConnectionMultiplexer.Connect(configuration);
+});
+builder.Services.AddScoped(sp => sp.GetRequiredService<StackExchange.Redis.ConnectionMultiplexer>().GetDatabase());
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
+builder.Services.AddControllers();
+
+builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+
+// Configure Mapster
+MapsterConfig.RegisterMappings();
+
+builder.Host.UseOrleans(siloBuilder =>
+{
+    siloBuilder.UseLocalhostClustering();
+    siloBuilder.AddMemoryGrainStorage("PubSubStore");
+});
 
 builder.Services.AddHostedService<TradingStrategyMonitor>();
 builder.Services.AddHostedService<OrderMonitoringService>();
 builder.Services.AddHostedService<ExpiryDayMonitor>();
 
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddControllers();
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(builder => builder
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddSqlClientInstrumentation()
+        .AddConsoleExporter()
+        .AddJaegerExporter(o =>
+        {
+            o.AgentHost = "localhost";
+            o.AgentPort = 6831;
+        }));
 builder.Services.AddApiVersioning(options =>
 {
     options.ReportApiVersions = true;
@@ -90,7 +167,8 @@ if (jwtEnabled)
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "KiteConnectApi", Version = "v1" });
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Description = "JWT Authorization header using the Bearer scheme. Example: Bearer {token}",
+
             Name = "Authorization",
             In = ParameterLocation.Header,
             Type = SecuritySchemeType.ApiKey,
@@ -149,7 +227,8 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-            .AllowAnyOrigin()
+            .WithOrigins("http://localhost:4200")
+            .AllowCredentials()
             .AllowAnyMethod()
             .AllowAnyHeader();
         });

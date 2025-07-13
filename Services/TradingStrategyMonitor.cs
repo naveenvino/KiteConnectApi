@@ -8,6 +8,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans;
+using KiteConnectApi.Grains;
 
 namespace KiteConnectApi.Services
 {
@@ -15,11 +17,13 @@ namespace KiteConnectApi.Services
     {
         private readonly ILogger<TradingStrategyMonitor> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IClusterClient _clusterClient;
 
-        public TradingStrategyMonitor(ILogger<TradingStrategyMonitor> logger, IServiceScopeFactory scopeFactory)
+        public TradingStrategyMonitor(ILogger<TradingStrategyMonitor> logger, IServiceScopeFactory scopeFactory, IClusterClient clusterClient)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _clusterClient = clusterClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,43 +37,16 @@ namespace KiteConnectApi.Services
                 {
                     using (var scope = _scopeFactory.CreateScope())
                     {
-                        var positionRepository = scope.ServiceProvider.GetRequiredService<IPositionRepository>();
-                        var orderRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-                        var kiteConnectService = scope.ServiceProvider.GetRequiredService<IKiteConnectService>();
-                        var strategyService = scope.ServiceProvider.GetRequiredService<StrategyService>();
-                        var strategyConfig = scope.ServiceProvider.GetRequiredService<IOptions<NiftyOptionStrategyConfig>>().Value;
+                        var strategyConfigRepository = scope.ServiceProvider.GetRequiredService<INiftyOptionStrategyConfigRepository>();
 
-                        var openPositions = await positionRepository.GetOpenPositionsAsync();
+                        var activeStrategies = (await strategyConfigRepository.GetAllAsync())
+                                   .Where(s => s.IsEnabled && s.ToDate >= DateTime.Today)
+                                   .ToList();
 
-                        foreach (var position in openPositions)
+                        foreach (var strategy in activeStrategies)
                         {
-                            if (position.PositionId == null) continue;
-
-                            var orders = (await orderRepository.GetOrdersByPositionIdAsync(position.PositionId)).ToList();
-                            var mainOrder = orders.FirstOrDefault(o => o.TransactionType == "SELL");
-                            var hedgeOrder = orders.FirstOrDefault(o => o.TransactionType == "BUY");
-
-                            if (mainOrder?.TradingSymbol == null || hedgeOrder?.TradingSymbol == null) continue;
-
-                            // Get current prices
-                            var quotes = await kiteConnectService.GetQuotesAsync(new[] { mainOrder.TradingSymbol, hedgeOrder.TradingSymbol });
-                            var mainQuote = quotes[mainOrder.TradingSymbol];
-                            var hedgeQuote = quotes[hedgeOrder.TradingSymbol];
-
-                            // Calculate P&L
-                            decimal initialCredit = mainOrder.Price - hedgeOrder.Price;
-                            decimal currentCredit = mainQuote.LastPrice - hedgeQuote.LastPrice;
-                            decimal pnl = initialCredit - currentCredit;
-                            decimal pnlPercentage = (pnl / initialCredit) * 100;
-
-                            _logger.LogInformation("Position {PositionId} P&L Check: Initial Credit={Initial}, Current Credit={Current}, P&L={PnL}, P&L%={PnlPercent}", position.PositionId, initialCredit, currentCredit, pnl, pnlPercentage);
-
-                            // Check stop-loss
-                            if (pnlPercentage <= -strategyConfig.StopLossPercentage)
-                            {
-                                _logger.LogWarning("AUTOMATED STOP-LOSS TRIGGERED for Position {PositionId}. P&L: {PnlPercent}%", position.PositionId, pnlPercentage);
-                                await strategyService.ExitPositionByIdAsync(position.PositionId);
-                            }
+                            var strategyGrain = _clusterClient.GetGrain<IStrategyGrain>(strategy.Id);
+                            await strategyGrain.MonitorAndAdjustPositions();
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-using KiteConnect;
+using KiteConnectApi.Models.Trading;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,14 +14,10 @@ namespace KiteConnectApi.Services
             _kiteConnectService = kiteConnectService;
         }
 
-        // ADDED: Implementation for CalculateRSI to resolve compilation error.
-        public async Task<decimal> CalculateRSI(string symbol, int period)
+        public async Task<decimal> CalculateRSI(string symbol, string exchange, int period)
         {
-            // In a real application, you would calculate RSI from historical data.
-            // This is a placeholder value.
             Console.WriteLine($"Calculating RSI for {symbol}");
-            var data = await GetHistoricalData(symbol, DateTime.UtcNow.AddDays(-30), DateTime.UtcNow, "day");
-            // Placeholder RSI logic
+            var data = await GetHistoricalData(symbol, exchange, DateTime.UtcNow.AddDays(-30), DateTime.UtcNow, "day");
             if (data.Count > period)
             {
                 return 45m; // Dummy value
@@ -29,12 +25,20 @@ namespace KiteConnectApi.Services
             return 50m; // Default dummy value
         }
 
-        // ADDED: Implementation for GetHistoricalData to resolve compilation error.
-        public async Task<List<Historical>> GetHistoricalData(string symbol, DateTime from, DateTime to, string interval)
+        public async Task<List<SimulatedHistoricalData>> GetHistoricalData(string symbol, string exchange, DateTime from, DateTime to, string interval)
         {
-            // In a real scenario, you'd get the instrument token for the symbol first.
-            string instrumentToken = "256265"; // Placeholder for NIFTY 50
-            return await _kiteConnectService.GetHistoricalDataAsync(instrumentToken, from, to, interval);
+            // In a real backtesting scenario, this would fetch actual historical data.
+            // For now, return the data set via SetHistoricalData.
+            var instruments = await _kiteConnectService.GetInstrumentsAsync(exchange);
+            var instrument = instruments.FirstOrDefault(i => i.TradingSymbol == symbol);
+
+            if (instrument == null)
+            {
+                // Log error or throw exception
+                return new List<SimulatedHistoricalData>();
+            }
+
+            return await _kiteConnectService.GetHistoricalDataAsync(instrument.InstrumentToken.ToString(), from, to, interval);
         }
     }
 }

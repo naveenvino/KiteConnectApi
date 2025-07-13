@@ -19,6 +19,12 @@ namespace KiteConnectApi.Models.Trading
         public string? Product { get; set; }
         public string? Exchange { get; set; }
         public string? Signal { get; set; }
+        public string? StrategyConfigId { get; set; } // Foreign key to NiftyOptionStrategyConfig
+        public DateTime? EntryTime { get; set; }
+        public DateTime? ExitTime { get; set; }
+        public string? StopLossOrderId { get; set; }
+        public string? TargetOrderId { get; set; }
+        public string? HedgeTradingSymbol { get; set; }
 
     }
 }

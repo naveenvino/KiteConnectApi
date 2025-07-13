@@ -1,8 +1,8 @@
-using KiteConnect;
 using KiteConnectApi.Models.Trading;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KiteConnectApi.Models.Dto;
 
 namespace KiteConnectApi.Services
 {
@@ -15,7 +15,7 @@ namespace KiteConnectApi.Services
             _kiteConnectService = kiteConnectService;
         }
 
-        public async Task<List<Instrument>> ScreenMarketAsync(ScreenerCriteria criteria)
+        public async Task<List<InstrumentDto>> ScreenMarketAsync(ScreenerCriteria criteria)
         {
             var allInstruments = await _kiteConnectService.GetInstrumentsAsync(criteria.Exchange);
 
@@ -35,16 +35,16 @@ namespace KiteConnectApi.Services
             var instrumentTokens = allInstruments.Select(i => i.InstrumentToken.ToString()).ToArray();
             if (!instrumentTokens.Any())
             {
-                return new List<Instrument>();
+                return new List<InstrumentDto>();
             }
 
             var quotes = await _kiteConnectService.GetQuotesAsync(instrumentTokens);
 
-            var screenedInstruments = new List<Instrument>();
+            var screenedInstruments = new List<InstrumentDto>();
 
             foreach (var instrument in allInstruments)
             {
-                if (quotes.TryGetValue(instrument.InstrumentToken.ToString(), out Quote quote))
+                if (quotes.TryGetValue(instrument.InstrumentToken.ToString(), out KiteConnect.Quote quote))
                 {
                     // Check if quote is valid (e.g., LastPrice is not default for struct)
                     if (quote.LastPrice == 0 && quote.Volume == 0) continue; // Skip invalid quotes

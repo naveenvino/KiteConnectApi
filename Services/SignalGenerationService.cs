@@ -19,7 +19,7 @@ namespace KiteConnectApi.Services
         {
             // TODO: Implement your actual signal generation logic.
             var signals = new List<TradingSignal>();
-            var rsi = await _technicalAnalysisService.CalculateRSI("NIFTY 50", 14);
+            var rsi = await _technicalAnalysisService.CalculateRSI("NIFTY", "NFO", 14);
             var newsSentiment = await _externalDataService.GetNewsSentimentAsync("NIFTY 50");
 
             if (rsi < 30)

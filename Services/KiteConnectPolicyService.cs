@@ -62,9 +62,9 @@ namespace KiteConnectApi.Services
         }
 
         // Implement IKiteConnectService methods, wrapping calls with policies
-        public Task<Dictionary<string, dynamic>> PlaceOrderAsync(string? exchange, string? tradingsymbol, string? transaction_type, int quantity, string? product, string? order_type, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = "DAY", string? tag = null, string? positionId = null)
+        public Task<Dictionary<string, dynamic>> PlaceOrderAsync(string? exchange, string? tradingsymbol, string? transaction_type, int quantity, string? product, string? order_type, decimal? price = null, decimal? trigger_price = null, decimal? limit_price = null, int? disclosed_quantity = null, string? validity = "DAY", string? tag = null, string? positionId = null)
         {
-            return ExecutePolicyAsync(() => _innerKiteConnectService.PlaceOrderAsync(exchange, tradingsymbol, transaction_type, quantity, product, order_type, price, trigger_price, disclosed_quantity, validity, tag, positionId));
+            return ExecutePolicyAsync(() => _innerKiteConnectService.PlaceOrderAsync(exchange, tradingsymbol, transaction_type, quantity, product, order_type, price, trigger_price, limit_price, disclosed_quantity, validity, tag, positionId));
         }
 
         public Task<List<KiteConnect.Order>> GetOrdersAsync()
@@ -94,7 +94,7 @@ namespace KiteConnectApi.Services
             return ExecutePolicyAsync(() => _innerKiteConnectService.CancelOrderAsync(order_id, variety));
         }
 
-        public Task<List<Instrument>> GetInstrumentsAsync(string? exchange = null)
+        public Task<List<KiteConnectApi.Models.Dto.InstrumentDto>> GetInstrumentsAsync(string? exchange = null)
         {
             return ExecutePolicyAsync(() => _innerKiteConnectService.GetInstrumentsAsync(exchange));
         }
@@ -104,7 +104,7 @@ namespace KiteConnectApi.Services
             return ExecutePolicyAsync(() => _innerKiteConnectService.GetQuotesAsync(instruments));
         }
 
-        public Task<List<Historical>> GetHistoricalDataAsync(string instrumentToken, DateTime from, DateTime to, string interval, bool continuous = false, int? oi = null)
+        public Task<List<KiteConnectApi.Models.Trading.SimulatedHistoricalData>> GetHistoricalDataAsync(string instrumentToken, DateTime from, DateTime to, string interval, bool continuous = false, int? oi = null)
         {
             return ExecutePolicyAsync(() => _innerKiteConnectService.GetHistoricalDataAsync(instrumentToken, from, to, interval, continuous, oi));
         }
@@ -119,9 +119,9 @@ namespace KiteConnectApi.Services
             return ExecutePolicyAsync(() => _innerKiteConnectService.GenerateSessionAsync(requestToken));
         }
 
-        public Task<Dictionary<string, dynamic>> ModifyOrderAsync(string order_id, string? exchange = null, string? tradingsymbol = null, int? quantity = null, string? order_type = null, decimal? price = null, decimal? trigger_price = null, int? disclosed_quantity = null, string? validity = null)
+        public Task<Dictionary<string, dynamic>> ModifyOrderAsync(string order_id, string? exchange = null, string? tradingsymbol = null, int? quantity = null, string? order_type = null, decimal? price = null, decimal? trigger_price = null, decimal? limit_price = null, int? disclosed_quantity = null, string? validity = null)
         {
-            return ExecutePolicyAsync(() => _innerKiteConnectService.ModifyOrderAsync(order_id, exchange, tradingsymbol, quantity, order_type, price, trigger_price, disclosed_quantity, validity));
+            return ExecutePolicyAsync(() => _innerKiteConnectService.ModifyOrderAsync(order_id, exchange, tradingsymbol, quantity, order_type, price, trigger_price, limit_price, disclosed_quantity, validity));
         }
 
         public Task<List<KiteConnect.Order>> GetOrderHistoryAsync(string orderId)

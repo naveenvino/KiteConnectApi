@@ -12,11 +12,20 @@ namespace KiteConnectApi.Controllers
     {
         private readonly StrategyManagerService _strategyManagerService;
         private readonly PortfolioAllocationService _portfolioAllocationService;
+        private readonly ITradingStrategyService _tradingStrategyService;
 
-        public StrategyController(StrategyManagerService strategyManagerService, PortfolioAllocationService portfolioAllocationService)
+        public StrategyController(StrategyManagerService strategyManagerService, PortfolioAllocationService portfolioAllocationService, ITradingStrategyService tradingStrategyService)
         {
             _strategyManagerService = strategyManagerService;
             _portfolioAllocationService = portfolioAllocationService;
+            _tradingStrategyService = tradingStrategyService;
+        }
+
+        [HttpPost("{strategyId}/square-off-all")]
+        public async Task<IActionResult> SquareOffAllPositions(string strategyId)
+        {
+            await _tradingStrategyService.SquareOffAllPositions(strategyId);
+            return Ok($"Square-off initiated for strategy ID: {strategyId}");
         }
 
         [HttpGet("total-allocated-capital")]

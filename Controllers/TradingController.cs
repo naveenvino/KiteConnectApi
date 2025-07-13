@@ -1,4 +1,4 @@
-using KiteConnectApi.Models.Trading;
+using KiteConnectApi.Models.Dto;
 using KiteConnectApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

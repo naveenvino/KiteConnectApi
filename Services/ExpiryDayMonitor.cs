@@ -6,6 +6,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using KiteConnect;
+using System.Collections.Generic;
 
 namespace KiteConnectApi.Services
 {
@@ -20,6 +22,7 @@ namespace KiteConnectApi.Services
             _scopeFactory = scopeFactory;
         }
 
+        
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -31,20 +34,22 @@ namespace KiteConnectApi.Services
                 {
                     using (var scope = _scopeFactory.CreateScope())
                     {
-                        var strategyService = scope.ServiceProvider.GetRequiredService<StrategyService>();
-                        var positionRepository = scope.ServiceProvider.GetRequiredService<IPositionRepository>();
+                        var tradeExecutionService = scope.ServiceProvider.GetRequiredService<ITradeExecutionService>();
+                        var strategyConfigRepository = scope.ServiceProvider.GetRequiredService<INiftyOptionStrategyConfigRepository>();
+                        var kiteConnectService = scope.ServiceProvider.GetRequiredService<IKiteConnectService>();
 
-                        var expiry = strategyService.GetNextWeeklyExpiry();
-                        // Check if it's expiry day and after market hours (e.g., 4 PM)
-                        if (DateTime.Today == expiry.Date && DateTime.Now.Hour >= 16)
+                        var instruments = await kiteConnectService.GetInstrumentsAsync("NFO");
+
+                        var activeStrategies = await strategyConfigRepository.GetAllAsync();
+
+                        foreach (var strategy in activeStrategies.Where(s => s.IsEnabled))
                         {
-                            var openPositions = await positionRepository.GetOpenPositionsAsync();
-                            if (openPositions.Any())
+                            var expiryDate = GetNearestWeeklyExpiry(instruments, strategy.UnderlyingInstrument);
+
+                            if (expiryDate != default && DateTime.Today == expiryDate.Date && DateTime.Now.Hour >= 16)
                             {
-                                _logger.LogWarning("EXPIRY DAY: Closing all open positions.");
-                                // --- FIX: Call the correct method to exit all positions ---
-                                await strategyService.ExitAllPositionsAsync();
-                                // --- END OF FIX ---
+                                _logger.LogWarning($"EXPIRY DAY: Closing all open positions for strategy {strategy.StrategyName}.");
+                                await tradeExecutionService.SquareOffAllPositions(strategy.Id);
                             }
                         }
                     }
@@ -55,5 +60,24 @@ namespace KiteConnectApi.Services
                 }
             }
         }
+
+        private DateTime GetNearestWeeklyExpiry(IEnumerable<KiteConnectApi.Models.Dto.InstrumentDto> instruments, string? underlyingInstrument)
+        {
+            if (string.IsNullOrEmpty(underlyingInstrument)) return default;
+
+            var today = DateTime.Today;
+            var nextThursday = today.DayOfWeek <= DayOfWeek.Thursday
+                ? today.AddDays(DayOfWeek.Thursday - today.DayOfWeek)
+                : today.AddDays(7 - (int)today.DayOfWeek + (int)DayOfWeek.Thursday);
+
+            var weeklyExpiries = instruments
+                .Where(i => i.InstrumentType == "CE" && i.Name == underlyingInstrument && i.Expiry.HasValue && i.Expiry.Value.DayOfWeek == DayOfWeek.Thursday)
+                .Select(i => i.Expiry.Value)
+                .Distinct()
+                .OrderBy(d => d);
+
+            return weeklyExpiries.FirstOrDefault(d => d >= nextThursday);
+        }
+
     }
 }

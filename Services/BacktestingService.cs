@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KiteConnect; // Added this line
+using KiteConnect;
 
 namespace KiteConnectApi.Services
 {
@@ -27,6 +27,15 @@ namespace KiteConnectApi.Services
         public async Task<BacktestResultDto> RunBacktest(string symbol, DateTime from, DateTime to, string interval)
         {
             var historicalData = await _kiteConnectService.GetHistoricalDataAsync(symbol, from, to, interval);
+            var simulatedHistoricalData = historicalData.Select(h => new SimulatedHistoricalData
+            {
+                TimeStamp = h.TimeStamp,
+                Open = h.Open,
+                High = h.High,
+                Low = h.Low,
+                Close = h.Close,
+                Volume = h.Volume
+            }).ToList();
 
             var result = new BacktestResultDto
             {
@@ -44,7 +53,7 @@ namespace KiteConnectApi.Services
             decimal peakEquity = 0;
             decimal currentEquity = 0;
 
-            foreach (var dataPoint in historicalData.OrderBy(d => d.TimeStamp))
+            foreach (var dataPoint in simulatedHistoricalData.OrderBy(d => d.TimeStamp))
             {
                 // Simple strategy: Buy if close > open, Sell if close < open
                 if (dataPoint.Close > dataPoint.Open && currentTrade == null)
@@ -93,8 +102,8 @@ namespace KiteConnectApi.Services
             // If there's an open trade at the end, close it at the last data point's close price
             if (currentTrade != null && currentTrade.Status == "Open")
             {
-                var lastDataPoint = historicalData.OrderByDescending(d => d.TimeStamp).FirstOrDefault();
-                if (lastDataPoint.TimeStamp != default(DateTime))
+                var lastDataPoint = simulatedHistoricalData.OrderByDescending(d => d.TimeStamp).FirstOrDefault();
+                if (lastDataPoint != null && lastDataPoint.TimeStamp != default(DateTime))
                 {
                     currentTrade.ExitPrice = lastDataPoint.Close;
                     currentTrade.ExitTime = lastDataPoint.TimeStamp;
