@@ -78,6 +78,8 @@ builder.Services.AddScoped<PortfolioAllocationService>();
 // --- END OF FIX ---
 
 
+builder.Services.AddScoped<IStrategyConfigRepository, StrategyConfigRepository>();
+builder.Services.AddScoped<IStrategyRepository, StrategyRepository>();
 builder.Services.AddScoped<INiftyOptionStrategyConfigRepository, NiftyOptionStrategyConfigRepository>();
 builder.Services.AddScoped<IManualTradingViewAlertRepository, ManualTradingViewAlertRepository>();
 builder.Services.AddScoped<ITradingStrategyService, TradingStrategyService>();

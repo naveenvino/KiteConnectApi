@@ -72,7 +72,7 @@ namespace KiteConnectApi.Services
 
             var weeklyExpiries = instruments
                 .Where(i => i.InstrumentType == "CE" && i.Name == underlyingInstrument && i.Expiry.HasValue && i.Expiry.Value.DayOfWeek == DayOfWeek.Thursday)
-                .Select(i => i.Expiry.Value)
+                .Select(i => i.Expiry!.Value)
                 .Distinct()
                 .OrderBy(d => d);
 

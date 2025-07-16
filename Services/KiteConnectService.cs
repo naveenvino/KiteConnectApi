@@ -67,7 +67,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation("Attempting to generate session with request token.");
             try
             {
-                User user = _kite.GenerateSession(requestToken, _configuration["Kite:ApiSecret"]);
+                User user = await Task.Run(() => _kite.GenerateSession(requestToken, _configuration["Kite:ApiSecret"]));
                 _accessToken = user.AccessToken;
                 _logger.LogInformation("Session generated successfully.");
                 return user;
@@ -127,7 +127,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation($"Fetching quotes for {string.Join(", ", instruments)} from Kite API.");
             try
             {
-                return _kite.GetQuote(instruments);
+                return await Task.Run(() => _kite.GetQuote(instruments));
             }
             catch (Exception ex)
             {
@@ -141,7 +141,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation("Fetching positions from Kite API.");
             try
             {
-                PositionResponse positionResponse = _kite.GetPositions();
+                PositionResponse positionResponse = await Task.Run(() => _kite.GetPositions());
                 _logger.LogInformation($"Successfully fetched {positionResponse.Net.Count} positions.");
                 return positionResponse.Net.Select(p => new TradePosition
                 {
@@ -167,7 +167,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation("Fetching orders from Kite API.");
             try
             {
-                return _kite.GetOrders();
+                return await Task.Run(() => _kite.GetOrders());
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ namespace KiteConnectApi.Services
             try
             {
                 bool oiFlag = oi.HasValue && oi.Value == 1;
-                var historicalData = _kite.GetHistoricalData(instrumentToken, from, to, interval, continuous, oiFlag);
+                var historicalData = await Task.Run(() => _kite.GetHistoricalData(instrumentToken, from, to, interval, continuous, oiFlag));
                 _logger.LogInformation($"Successfully fetched {historicalData.Count} historical data points.");
                 return historicalData.Select(h => new KiteConnectApi.Models.Trading.SimulatedHistoricalData
                 {
@@ -206,7 +206,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation($"Placing order: {transaction_type} {quantity} of {tradingsymbol} on {exchange} as {order_type} order.");
             try
             {
-                return _kite.PlaceOrder(
+                return await Task.Run(() => _kite.PlaceOrder(
                     Exchange: exchange,
                     TradingSymbol: tradingsymbol,
                     TransactionType: transaction_type,
@@ -218,7 +218,7 @@ namespace KiteConnectApi.Services
                     DisclosedQuantity: disclosed_quantity,
                     TriggerPrice: trigger_price,
                     Tag: tag
-                );
+                ));
             }
             catch (Exception ex)
             {
@@ -232,7 +232,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation($"Modifying order {orderId}.");
             try
             {
-                return _kite.ModifyOrder(
+                return await Task.Run(() => _kite.ModifyOrder(
                     OrderId: orderId,
                     Exchange: exchange,
                     TradingSymbol: tradingSymbol,
@@ -244,7 +244,7 @@ namespace KiteConnectApi.Services
                     Validity: validity,
                     DisclosedQuantity: disclosedQuantity,
                     TriggerPrice: triggerPrice
-                );
+                ));
             }
             catch (Exception ex)
             {
@@ -257,7 +257,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation($"Cancelling order {orderId}.");
             try
             {
-                return _kite.CancelOrder(orderId, variety);
+                return await Task.Run(() => _kite.CancelOrder(orderId, variety));
             }
             catch (Exception ex)
             {
@@ -276,7 +276,7 @@ namespace KiteConnectApi.Services
             _logger.LogInformation("Fetching holdings from Kite API.");
             try
             {
-                return _kite.GetHoldings();
+                return await Task.Run(() => _kite.GetHoldings());
             }
             catch (Exception ex)
             {

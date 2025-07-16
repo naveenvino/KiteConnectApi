@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KiteConnect;
+using KiteConnectApi.Repositories;
 
 namespace KiteConnectApi.Services
 {
@@ -13,20 +14,39 @@ namespace KiteConnectApi.Services
         private readonly IKiteConnectService _kiteConnectService;
         private readonly StrategyService _strategyService;
         private readonly TechnicalAnalysisService _technicalAnalysisService;
+        private readonly IStrategyConfigRepository _strategyConfigRepository; // Added
 
         public BacktestingService(
             IKiteConnectService kiteConnectService,
             StrategyService strategyService,
-            TechnicalAnalysisService technicalAnalysisService)
+            TechnicalAnalysisService technicalAnalysisService,
+            IStrategyConfigRepository strategyConfigRepository) // Added
         {
             _kiteConnectService = kiteConnectService;
             _strategyService = strategyService;
             _technicalAnalysisService = technicalAnalysisService;
+            _strategyConfigRepository = strategyConfigRepository; // Added
         }
 
-        public async Task<BacktestResultDto> RunBacktest(string symbol, DateTime from, DateTime to, string interval)
+        public async Task<BacktestResultDto> RunBacktest(string strategyId)
         {
-            var historicalData = await _kiteConnectService.GetHistoricalDataAsync(symbol, from, to, interval);
+            // 1. Retrieve StrategyConfig based on strategyId
+            var strategyConfig = await _strategyConfigRepository.GetStrategyConfigByIdAsync(strategyId);
+            if (strategyConfig == null)
+            {
+                throw new ArgumentException($"Strategy with ID {strategyId} not found.");
+            }
+
+            // 2. Extract basic backtesting parameters from strategyConfig.Parameters
+            //    Note: In a real scenario, these would be part of a more structured DTO
+            //    or directly on StrategyConfig if they are core backtest parameters.
+            string symbol = strategyConfig.Parameters.GetValueOrDefault("symbol", "NIFTY"); // Default if not found
+            DateTime fromDate = DateTime.Parse(strategyConfig.Parameters.GetValueOrDefault("activeFrom", DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")));
+            DateTime toDate = DateTime.Parse(strategyConfig.Parameters.GetValueOrDefault("activeTo", DateTime.Now.ToString("yyyy-MM-dd")));
+            string interval = strategyConfig.Parameters.GetValueOrDefault("interval", "day");
+
+            // 3. Use extracted parameters to get historical data
+            var historicalData = await _kiteConnectService.GetHistoricalDataAsync(symbol, fromDate, toDate, interval);
             var simulatedHistoricalData = historicalData.Select(h => new SimulatedHistoricalData
             {
                 TimeStamp = h.TimeStamp,
@@ -40,8 +60,8 @@ namespace KiteConnectApi.Services
             var result = new BacktestResultDto
             {
                 Symbol = symbol,
-                FromDate = from,
-                ToDate = to,
+                FromDate = fromDate,
+                ToDate = toDate,
                 Interval = interval
             };
 
@@ -52,6 +72,17 @@ namespace KiteConnectApi.Services
             decimal maxDrawdown = 0;
             decimal peakEquity = 0;
             decimal currentEquity = 0;
+
+            // --- Placeholder for advanced backtesting logic based on StrategyConfig ---
+            // In a real enhanced backtesting engine, this section would be significantly more complex.
+            // It would interpret strategyConfig.Parameters (e.g., sizingMethod, hedgeSettings, riskManagement)
+            // to simulate trades more accurately.
+            // For example:
+            // decimal initialCapital = strategyConfig.AllocatedCapital;
+            // var riskManagementSettings = strategyConfig.RiskParameters; // Or from parameters dictionary
+            // var sizingMethod = strategyConfig.Parameters["sizingMethod"];
+            // ... and so on.
+            // The current simple strategy (Close > Open) is used for demonstration.
 
             foreach (var dataPoint in simulatedHistoricalData.OrderBy(d => d.TimeStamp))
             {

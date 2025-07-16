@@ -24,7 +24,7 @@ namespace KiteConnectApi.Validators
             RuleFor(x => x.ExecutionMode).NotEmpty().WithMessage("Execution Mode is required (Auto or Manual).").Must(BeValidExecutionMode).WithMessage("Execution Mode must be Auto or Manual.");
         }
 
-        private bool BeValidExecutionMode(string mode)
+        private bool BeValidExecutionMode(string? mode)
         {
             return mode == "Auto" || mode == "Manual";
         }

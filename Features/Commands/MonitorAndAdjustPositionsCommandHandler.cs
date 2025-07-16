@@ -63,7 +63,7 @@ namespace KiteConnectApi.Features.Commands
                 if (currentStopLossOrder != null)
                 {
                     decimal newStopLossPrice = position.AveragePrice - (config.LockProfitAmount / position.Quantity);
-                    if (currentStopLossOrder.TriggerPrice == null || newStopLossPrice > currentStopLossOrder.TriggerPrice)
+                    if (newStopLossPrice > currentStopLossOrder.TriggerPrice)
                     {
                         await _kiteConnectService.ModifyOrderAsync(
                             order_id: currentStopLossOrder.OrderId!,
@@ -80,7 +80,7 @@ namespace KiteConnectApi.Features.Commands
                 if (currentStopLossOrder != null)
                 {
                     decimal newStopLossPrice = position.AveragePrice - (currentPnl + config.TrailStopLossAmount) / position.Quantity;
-                    if (currentStopLossOrder.TriggerPrice == null || newStopLossPrice > currentStopLossOrder.TriggerPrice)
+                    if (newStopLossPrice > currentStopLossOrder.TriggerPrice)
                     {
                         await _kiteConnectService.ModifyOrderAsync(
                             order_id: currentStopLossOrder.OrderId!,
@@ -97,7 +97,7 @@ namespace KiteConnectApi.Features.Commands
                 if (currentStopLossOrder != null)
                 {
                     decimal entryPrice = position.AveragePrice;
-                    if (currentStopLossOrder.TriggerPrice == null || entryPrice > currentStopLossOrder.TriggerPrice)
+                    if (entryPrice > currentStopLossOrder.TriggerPrice)
                     {
                         await _kiteConnectService.ModifyOrderAsync(
                             order_id: currentStopLossOrder.OrderId!,

@@ -90,7 +90,11 @@ namespace KiteConnectApi.Features.Commands
                     return false;
                 }
 
-                var mainOrderId = mainOrderResponse["order_id"].ToString();
+                string mainOrderId = string.Empty;
+                if (mainOrderResponse.TryGetValue("order_id", out object? mainOrderIdObj) && mainOrderIdObj != null)
+                {
+                    mainOrderId = Convert.ToString(mainOrderIdObj) ?? string.Empty;
+                }
 
                 // Place the hedge order (buy)
                 var hedgeOrderResponse = await _kiteConnectService.PlaceOrderAsync(
@@ -109,7 +113,11 @@ namespace KiteConnectApi.Features.Commands
                     return false;
                 }
 
-                var hedgeOrderId = hedgeOrderResponse["order_id"].ToString();
+                string hedgeOrderId = string.Empty;
+                if (hedgeOrderResponse.TryGetValue("order_id", out object? hedgeOrderIdObj) && hedgeOrderIdObj != null)
+                {
+                    hedgeOrderId = Convert.ToString(hedgeOrderIdObj) ?? string.Empty;
+                }
 
                 // 5. Save position and orders to the database
                 var position = new TradePosition
@@ -129,7 +137,7 @@ namespace KiteConnectApi.Features.Commands
 
                 var mainOrder = new KiteConnectApi.Models.Trading.Order
                 {
-                    OrderId = mainOrderId,
+                    OrderId = mainOrderId!,
                     PositionId = position.PositionId,
                     TradingSymbol = mainTradingSymbol,
                     TransactionType = "SELL",
@@ -141,7 +149,7 @@ namespace KiteConnectApi.Features.Commands
 
                 var hedgeOrder = new KiteConnectApi.Models.Trading.Order
                 {
-                    OrderId = hedgeOrderId,
+                    OrderId = hedgeOrderId!,
                     PositionId = position.PositionId,
                     TradingSymbol = hedgeTradingSymbol,
                     TransactionType = "BUY",

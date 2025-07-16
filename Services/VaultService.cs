@@ -8,7 +8,7 @@ namespace KiteConnectApi.Services
 {
     public class VaultService
     {
-        private readonly IVaultClient _vaultClient;
+        private readonly IVaultClient? _vaultClient;
         private readonly ILogger<VaultService> _logger;
         private readonly IConfiguration _configuration;
 

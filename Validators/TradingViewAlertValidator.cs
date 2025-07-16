@@ -14,12 +14,12 @@ namespace KiteConnectApi.Validators
             RuleFor(x => x.Action).NotEmpty().WithMessage("Action is required (Entry or Stoploss).").Must(BeValidAction).WithMessage("Action must be Entry or Stoploss.");
         }
 
-        private bool BeValidOptionType(string type)
+        private bool BeValidOptionType(string? type)
         {
             return type == "CE" || type == "PE";
         }
 
-        private bool BeValidAction(string action)
+        private bool BeValidAction(string? action)
         {
             return action == "Entry" || action == "Stoploss";
         }

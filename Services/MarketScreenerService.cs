@@ -28,7 +28,7 @@ namespace KiteConnectApi.Services
             // If specific watchlist symbols are provided, filter by them first
             if (criteria.WatchlistSymbols != null && criteria.WatchlistSymbols.Any())
             {
-                allInstruments = allInstruments.Where(i => criteria.WatchlistSymbols.Contains(i.TradingSymbol)).ToList();
+                allInstruments = allInstruments.Where(i => i.TradingSymbol != null && criteria.WatchlistSymbols.Contains(i.TradingSymbol)).ToList();
             }
 
             // Get quotes for the filtered instruments
