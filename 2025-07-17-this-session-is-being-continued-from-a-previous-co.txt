@@ -1,0 +1,29 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: C:\Users\E1791\KiteApp\Kite                │
+╰───────────────────────────────────────────────────╯
+● Compact summary (ctrl+r to expand)
+  ⎿  Read Data\ApplicationDbContext.cs (126 lines)
+  ⎿  Read Models\Trading\NiftyIndexHistoricalData.cs (94 lines)
+  ⎿  Read Services\NiftyIndexDataCollectionService.cs (490 lines)
+  ⎿  Read appsettings.json (96 lines)
+  ⎿  Read quick_nifty_test.bat (23 lines)
+  ⎿  Todo list read (4 items)
+  ⎿  Claude usage limit reached. Your limit will reset at 8:30pm (Asia/Calcutta).
+
+      • /upgrade to increase your usage limit.
+
+> /model 
+  ⎿  Set model to sonnet (claude-sonnet-4-20250514)
+
+> continue
+  ⎿  Claude usage limit reached. Your limit will reset at 8:30pm (Asia/Calcutta).
+
+      • /upgrade to increase your usage limit.
+
+> /model 
+  ⎿  Set model to Default (Opus 4 for up to 20% of usage limits, then use Sonnet 4)
+

@@ -1,0 +1,244 @@
+using KiteConnectApi.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace KiteConnectApi.Controllers
+{
+    /// <summary>
+    /// Controller for Kite Connect authentication
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class KiteAuthController : ControllerBase
+    {
+        private readonly KiteAuthenticationService _authService;
+        private readonly KiteHistoricalDataService _dataService;
+        private readonly ILogger<KiteAuthController> _logger;
+
+        public KiteAuthController(
+            KiteAuthenticationService authService,
+            KiteHistoricalDataService dataService,
+            ILogger<KiteAuthController> logger)
+        {
+            _authService = authService;
+            _dataService = dataService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Step 1: Get Kite Connect login URL
+        /// </summary>
+        [HttpGet("login-url")]
+        public ActionResult<object> GetLoginUrl()
+        {
+            try
+            {
+                var loginUrl = _authService.GetLoginUrl();
+                
+                var response = new
+                {
+                    success = true,
+                    loginUrl = loginUrl,
+                    instructions = new[]
+                    {
+                        "1. Click on the login URL",
+                        "2. Login to your Kite account",
+                        "3. Authorize the app",
+                        "4. Copy the 'request_token' from the callback URL",
+                        "5. Use the request token in the /authenticate endpoint"
+                    },
+                    nextStep = "/api/KiteAuth/authenticate"
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating login URL");
+                return StatusCode(500, new { error = "Failed to generate login URL", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Step 2: Authenticate using request token
+        /// </summary>
+        [HttpPost("authenticate")]
+        public async Task<ActionResult<AuthenticationResult>> AuthenticateAsync([FromBody] AuthRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.RequestToken))
+                {
+                    return BadRequest(new { error = "Request token is required" });
+                }
+
+                var result = await _authService.GenerateSessionAsync(request.RequestToken);
+                
+                if (result.Success)
+                {
+                    _logger.LogInformation("User authenticated successfully: {UserId}", result.UserId);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Authentication failed");
+                return StatusCode(500, new { error = "Authentication failed", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Check authentication status
+        /// </summary>
+        [HttpGet("status")]
+        public async Task<ActionResult<object>> GetAuthStatusAsync()
+        {
+            try
+            {
+                var isAuthenticated = await _authService.IsAuthenticatedAsync();
+                
+                if (isAuthenticated)
+                {
+                    var profile = await _authService.GetUserProfileAsync();
+                    return Ok(new
+                    {
+                        authenticated = true,
+                        user = profile,
+                        message = "User is authenticated and ready to fetch data"
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        authenticated = false,
+                        message = "User is not authenticated. Please login first.",
+                        loginUrl = _authService.GetLoginUrl()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking auth status");
+                return Ok(new
+                {
+                    authenticated = false,
+                    error = ex.Message,
+                    loginUrl = _authService.GetLoginUrl()
+                });
+            }
+        }
+
+        /// <summary>
+        /// Test API connection and capabilities
+        /// </summary>
+        [HttpGet("test-connection")]
+        public async Task<ActionResult<ApiTestResult>> TestConnectionAsync()
+        {
+            try
+            {
+                var result = await _dataService.TestApiConnectionAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Connection test failed");
+                return StatusCode(500, new { error = "Connection test failed", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Get available instruments for options trading
+        /// </summary>
+        [HttpGet("instruments")]
+        public async Task<ActionResult<object>> GetInstrumentsAsync([FromQuery] string underlying = "NIFTY")
+        {
+            try
+            {
+                if (!await _authService.IsAuthenticatedAsync())
+                {
+                    return Unauthorized(new { error = "Not authenticated. Please login first." });
+                }
+
+                var instruments = await _dataService.GetOptionsInstrumentsAsync(underlying: underlying);
+                
+                var groupedByExpiry = instruments
+                    .GroupBy(i => i.Expiry?.Date ?? DateTime.Today)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        expiry = g.Key,
+                        instruments = g.Select(i => new
+                        {
+                            symbol = i.TradingSymbol,
+                            token = i.InstrumentToken,
+                            strike = i.Strike,
+                            optionType = i.InstrumentType,
+                            lotSize = i.LotSize
+                        }).OrderBy(x => x.strike).ThenBy(x => x.optionType)
+                    })
+                    .Take(3) // Next 3 expiries
+                    .ToList();
+
+                return Ok(new
+                {
+                    underlying = underlying,
+                    totalInstruments = instruments.Count,
+                    expiries = groupedByExpiry,
+                    summary = new
+                    {
+                        strikes = instruments.Select(i => i.Strike).Distinct().OrderBy(s => s).ToList(),
+                        expiryDates = instruments.Select(i => i.Expiry?.Date ?? DateTime.Today).Distinct().OrderBy(d => d).Take(5).ToList()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching instruments");
+                return StatusCode(500, new { error = "Failed to fetch instruments", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Load saved authentication tokens
+        /// </summary>
+        [HttpPost("load-saved-tokens")]
+        public async Task<ActionResult<object>> LoadSavedTokensAsync()
+        {
+            try
+            {
+                var loaded = await _authService.LoadSavedTokensAsync();
+                
+                if (loaded)
+                {
+                    var profile = await _authService.GetUserProfileAsync();
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Saved tokens loaded successfully",
+                        user = profile
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "No saved tokens found or tokens are invalid",
+                        loginUrl = _authService.GetLoginUrl()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading saved tokens");
+                return StatusCode(500, new { error = "Failed to load saved tokens", message = ex.Message });
+            }
+        }
+    }
+
+    public class AuthRequest
+    {
+        public string RequestToken { get; set; } = string.Empty;
+    }
+}

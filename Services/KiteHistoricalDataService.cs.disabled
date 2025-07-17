@@ -1,0 +1,346 @@
+using KiteConnect;
+using KiteConnectApi.Data;
+using KiteConnectApi.Models.Trading;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace KiteConnectApi.Services
+{
+    /// <summary>
+    /// Service for fetching historical data from Kite Connect API
+    /// </summary>
+    public class KiteHistoricalDataService
+    {
+        private readonly KiteAuthenticationService _authService;
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<KiteHistoricalDataService> _logger;
+
+        public KiteHistoricalDataService(
+            KiteAuthenticationService authService,
+            ApplicationDbContext context,
+            ILogger<KiteHistoricalDataService> logger)
+        {
+            _authService = authService;
+            _context = context;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Fetch and store historical options data from Kite Connect
+        /// </summary>
+        public async Task<HistoricalDataResult> FetchHistoricalOptionsDataAsync(
+            DateTime fromDate,
+            DateTime toDate,
+            List<int> strikes,
+            List<string> optionTypes,
+            string interval = "5minute",
+            string underlying = "NIFTY")
+        {
+            var result = new HistoricalDataResult
+            {
+                StartTime = DateTime.UtcNow,
+                RequestedPeriod = new { FromDate = fromDate, ToDate = toDate },
+                RequestedStrikes = strikes,
+                RequestedOptionTypes = optionTypes
+            };
+
+            try
+            {
+                if (!await _authService.IsAuthenticatedAsync())
+                {
+                    result.Success = false;
+                    result.ErrorMessage = "Not authenticated with Kite Connect. Please authenticate first.";
+                    return result;
+                }
+
+                var kite = _authService.GetAuthenticatedKite();
+                _logger.LogInformation("Starting historical data fetch for {StrikeCount} strikes, {TypeCount} types from {FromDate} to {ToDate}",
+                    strikes.Count, optionTypes.Count, fromDate, toDate);
+
+                // First, get instruments to map symbols
+                var instruments = await GetOptionsInstrumentsAsync(kite, underlying);
+                result.AvailableInstruments = instruments.Count;
+
+                var recordsAdded = 0;
+                var errors = new List<string>();
+
+                foreach (var strike in strikes)
+                {
+                    foreach (var optionType in optionTypes)
+                    {
+                        try
+                        {
+                            // Find the instrument for this strike and option type
+                            var instrument = FindInstrument(instruments, strike, optionType, fromDate);
+                            if (instrument == null)
+                            {
+                                var error = $"No instrument found for {strike}{optionType}";
+                                errors.Add(error);
+                                _logger.LogWarning(error);
+                                continue;
+                            }
+
+                            _logger.LogDebug("Fetching data for {Symbol} (Token: {Token})", instrument?.TradingSymbol ?? "Unknown", instrument?.InstrumentToken ?? 0);
+
+                            // Check if data already exists
+                            var existingCount = await _context.OptionsHistoricalData
+                                .CountAsync(d => d.TradingSymbol == instrument.TradingSymbol &&
+                                               d.Timestamp >= fromDate &&
+                                               d.Timestamp <= toDate);
+
+                            if (existingCount > 0)
+                            {
+                                _logger.LogDebug("Skipping {Symbol} - {Count} records already exist", instrument.TradingSymbol, existingCount);
+                                result.SkippedInstruments++;
+                                continue;
+                            }
+
+                            // Fetch historical data from Kite
+                            var historicalData = kite.GetHistoricalData(
+                                instrument.InstrumentToken.ToString(),
+                                fromDate,
+                                toDate,
+                                interval,
+                                false // continuous = false for options
+                            );
+
+                            if (historicalData?.Count > 0)
+                            {
+                                var optionsData = ConvertToOptionsHistoricalData(historicalData, instrument, interval);
+                                await _context.OptionsHistoricalData.AddRangeAsync(optionsData);
+                                
+                                recordsAdded += optionsData.Count;
+                                result.ProcessedInstruments++;
+                                
+                                _logger.LogDebug("Added {Count} records for {Symbol}", optionsData.Count, instrument.TradingSymbol);
+                            }
+                            else
+                            {
+                                var warning = $"No historical data returned for {instrument.TradingSymbol}";
+                                errors.Add(warning);
+                                _logger.LogWarning(warning);
+                            }
+
+                            // Add delay to avoid rate limiting
+                            await Task.Delay(100);
+                        }
+                        catch (Exception ex)
+                        {
+                            var error = $"Error fetching data for {strike}{optionType}: {ex.Message}";
+                            errors.Add(error);
+                            _logger.LogError(ex, "Error fetching data for {Strike}{OptionType}", strike, optionType);
+                        }
+                    }
+                }
+
+                // Save all changes
+                await _context.SaveChangesAsync();
+
+                result.Success = true;
+                result.RecordsAdded = recordsAdded;
+                result.Errors = errors;
+                result.EndTime = DateTime.UtcNow;
+                result.Duration = result.EndTime - result.StartTime;
+
+                _logger.LogInformation("Historical data fetch completed. Added {RecordsAdded} records, {ProcessedCount} instruments processed, {SkippedCount} skipped, {ErrorCount} errors",
+                    recordsAdded, result.ProcessedInstruments, result.SkippedInstruments, errors.Count);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.ErrorMessage = ex.Message;
+                result.EndTime = DateTime.UtcNow;
+                _logger.LogError(ex, "Fatal error during historical data fetch");
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Get available options instruments from Kite Connect
+        /// </summary>
+        public async Task<List<Instrument>> GetOptionsInstrumentsAsync(Kite? kite = null, string underlying = "NIFTY")
+        {
+            try
+            {
+                kite ??= _authService.GetAuthenticatedKite();
+                
+                _logger.LogInformation("Fetching instruments for {Underlying}", underlying);
+                
+                var instruments = kite.GetInstruments("NFO"); // NSE F&O segment
+                
+                var optionsInstruments = instruments
+                    .Where(i => i.Name == underlying && 
+                               (i.InstrumentType == "CE" || i.InstrumentType == "PE"))
+                    .ToList();
+
+                _logger.LogInformation("Found {Count} {Underlying} options instruments", optionsInstruments.Count, underlying);
+                
+                return optionsInstruments;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching instruments");
+                return new List<Instrument>();
+            }
+        }
+
+        /// <summary>
+        /// Find instrument for specific strike and option type
+        /// </summary>
+        private Instrument? FindInstrument(List<Instrument> instruments, int strike, string optionType, DateTime referenceDate)
+        {
+            // Find the instrument with matching strike and option type
+            // For current week expiry (closest to reference date)
+            return instruments
+                .Where(i => i.Strike == strike && i.InstrumentType == optionType)
+                .Where(i => i.Expiry >= referenceDate.Date) // Only future or current expiries
+                .OrderBy(i => i.Expiry) // Get nearest expiry
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Convert Kite historical data to our OptionsHistoricalData model
+        /// </summary>
+        private List<OptionsHistoricalData> ConvertToOptionsHistoricalData(
+            List<Historical> historicalData, 
+            Instrument instrument, 
+            string interval)
+        {
+            return historicalData.Select(h => new OptionsHistoricalData
+            {
+                TradingSymbol = instrument.TradingSymbol,
+                Timestamp = h.TimeStamp,
+                Exchange = instrument.Exchange,
+                Underlying = instrument.Name,
+                Strike = (int)instrument.Strike,
+                OptionType = instrument.InstrumentType,
+                ExpiryDate = instrument.Expiry ?? DateTime.UtcNow.AddDays(7),
+                Open = h.Open,
+                High = h.High,
+                Low = h.Low,
+                Close = h.Close,
+                LastPrice = h.Close, // Use close as last price
+                Volume = (long)h.Volume,
+                OpenInterest = (long)h.OI,
+                DataSource = "KiteConnect",
+                Interval = interval,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
+        }
+
+        /// <summary>
+        /// Get current market quotes for options
+        /// </summary>
+        public async Task<Dictionary<string, Quote>> GetCurrentQuotesAsync(List<string> instruments)
+        {
+            try
+            {
+                if (!await _authService.IsAuthenticatedAsync())
+                {
+                    throw new InvalidOperationException("Not authenticated with Kite Connect");
+                }
+
+                var kite = _authService.GetAuthenticatedKite();
+                var quotes = kite.GetQuote(instruments.ToArray());
+                
+                _logger.LogDebug("Fetched quotes for {Count} instruments", quotes.Count);
+                
+                return quotes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching current quotes");
+                return new Dictionary<string, Quote>();
+            }
+        }
+
+        /// <summary>
+        /// Test API connection and fetch sample data
+        /// </summary>
+        public async Task<ApiTestResult> TestApiConnectionAsync()
+        {
+            var result = new ApiTestResult { StartTime = DateTime.UtcNow };
+
+            try
+            {
+                // Test authentication
+                if (!await _authService.IsAuthenticatedAsync())
+                {
+                    result.AuthenticationStatus = "Failed - Not authenticated";
+                    result.Success = false;
+                    return result;
+                }
+
+                result.AuthenticationStatus = "Success";
+
+                // Test profile access
+                var profile = await _authService.GetUserProfileAsync();
+                result.UserProfile = $"{profile.UserName} ({profile.UserId})";
+
+                // Test instruments access
+                var kite = _authService.GetAuthenticatedKite();
+                var instruments = await GetOptionsInstrumentsAsync(kite);
+                result.InstrumentsCount = instruments.Count;
+
+                // Test historical data access (sample)
+                if (instruments.Any())
+                {
+                    var sampleInstrument = instruments.First();
+                    var sampleData = kite.GetHistoricalData(
+                        sampleInstrument.InstrumentToken.ToString(),
+                        DateTime.Today.AddDays(-2),
+                        DateTime.Today.AddDays(-1),
+                        "5minute",
+                        false
+                    );
+                    result.SampleDataPoints = sampleData?.Count ?? 0;
+                }
+
+                result.Success = true;
+                result.Message = "All API tests passed successfully";
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = ex.Message;
+                _logger.LogError(ex, "API connection test failed");
+            }
+
+            result.EndTime = DateTime.UtcNow;
+            result.Duration = result.EndTime - result.StartTime;
+            return result;
+        }
+    }
+
+    public class HistoricalDataResult
+    {
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public TimeSpan Duration { get; set; }
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
+        public object RequestedPeriod { get; set; } = new();
+        public List<int> RequestedStrikes { get; set; } = new();
+        public List<string> RequestedOptionTypes { get; set; } = new();
+        public int AvailableInstruments { get; set; }
+        public int ProcessedInstruments { get; set; }
+        public int SkippedInstruments { get; set; }
+        public int RecordsAdded { get; set; }
+        public List<string> Errors { get; set; } = new();
+    }
+
+    public class ApiTestResult
+    {
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public TimeSpan Duration { get; set; }
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string AuthenticationStatus { get; set; } = string.Empty;
+        public string UserProfile { get; set; } = string.Empty;
+        public int InstrumentsCount { get; set; }
+        public int SampleDataPoints { get; set; }
+    }
+}

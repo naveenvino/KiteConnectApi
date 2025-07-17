@@ -1,5 +1,6 @@
 using KiteConnectApi.Data;
 using KiteConnectApi.Services;
+using KiteConnectApi.Services.AI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -88,6 +89,8 @@ builder.Services.AddScoped<StrategyService>();
 builder.Services.AddScoped<RiskManagementService>();
 builder.Services.AddScoped<TechnicalAnalysisService>();
 builder.Services.AddScoped<MarketDataService>();
+builder.Services.AddScoped<OptionsTradeService>();
+builder.Services.AddHostedService<ExpirySquareOffService>();
 builder.Services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
 builder.Services.AddScoped<IScreenerCriteriaRepository, ScreenerCriteriaRepository>();
 builder.Services.AddScoped<EmailNotificationService>();
@@ -99,6 +102,39 @@ builder.Services.AddScoped<ExternalDataService>();
 builder.Services.AddScoped<ITradeExecutionService, TradeExecutionService>();
 builder.Services.AddSingleton<PricePredictionService>();
 builder.Services.AddSingleton<VaultService>();
+
+// AI-Enhanced Trading Services
+builder.Services.AddScoped<MLSignalValidationService>();
+builder.Services.AddScoped<PatternRecognitionService>();
+builder.Services.AddHttpClient<MarketSentimentAnalyzer>();
+builder.Services.AddScoped<AdaptiveSignalWeightingService>();
+
+// Kite Connect Services (Simplified)
+builder.Services.AddScoped<SimplifiedKiteDataService>();
+
+// Real Kite Connect Services for Historical Data
+builder.Services.AddScoped<RealKiteDataService>();
+builder.Services.AddScoped<EnhancedKiteDataService>();
+// TODO: Fix API compatibility for old services
+// builder.Services.AddScoped<KiteAuthenticationService>();
+// builder.Services.AddScoped<KiteHistoricalDataService>();
+
+// Production Services
+builder.Services.AddScoped<HistoricalOptionsDataService>();
+builder.Services.AddScoped<HistoricalBacktestingService>();
+builder.Services.AddScoped<TradingViewIndicatorService>();
+builder.Services.AddScoped<ApiTradingDashboardService>();
+builder.Services.AddScoped<IndicatorBacktestingService>();
+builder.Services.AddScoped<OptionSellingBacktestService>();
+builder.Services.AddScoped<HourlyOptionSellingBacktestService>();
+builder.Services.AddScoped<Pure1HSignalService>();
+builder.Services.AddScoped<CorrectedNiftySignalService>();
+builder.Services.AddScoped<NiftyIndexDataCollectionService>();
+builder.Services.AddHttpClient<NiftyIndexDataCollectionService>();
+builder.Services.AddScoped<UnifiedSignalService>();
+// builder.Services.AddScoped<ProductionKiteConnectService>(); // TODO: Fix interface implementation
+// builder.Services.AddSingleton<RealTimePerformanceMonitoringService>();
+// builder.Services.AddHostedService<RealTimePerformanceMonitoringService>(); // TODO: Fix database entities
 
 
 builder.Services.AddSingleton<StackExchange.Redis.ConnectionMultiplexer>(sp =>

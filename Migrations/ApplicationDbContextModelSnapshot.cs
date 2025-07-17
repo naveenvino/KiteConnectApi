@@ -22,6 +22,91 @@ namespace KiteConnectApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.ApiTradeLog", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("Confidence")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("EntryPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EntryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("ExitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExpiryDay")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OptionType")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal?>("PnL")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SignalId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("StopLoss")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Strike")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TradingSymbol")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WeekStartDate")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApiTradeLog");
+                });
+
             modelBuilder.Entity("KiteConnectApi.Models.Trading.BrokerLevelSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -101,7 +186,6 @@ namespace KiteConnectApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TradingDays")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -110,6 +194,61 @@ namespace KiteConnectApi.Migrations
                         .IsUnique();
 
                     b.ToTable("ExecutionSettings");
+                });
+
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.HedgeConfiguration", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("AutoAdjustHedge")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("HedgePercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("HedgePoints")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("HedgeRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("HedgeTransactionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HedgeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxHedgePrice")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinHedgePrice")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StrategyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyId")
+                        .HasDatabaseName("IX_HedgeConfiguration_StrategyId");
+
+                    b.ToTable("HedgeConfigurations");
                 });
 
             modelBuilder.Entity("KiteConnectApi.Models.Trading.Leg", b =>
@@ -189,6 +328,21 @@ namespace KiteConnectApi.Migrations
                     b.Property<decimal>("AllocatedMargin")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("AllowMultipleSignals")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("AllowedSignals")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("AutoSquareOffOnExpiry")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal?>("EntryLimitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -213,17 +367,33 @@ namespace KiteConnectApi.Migrations
                     b.Property<int>("ExitTime")
                         .HasColumnType("int");
 
+                    b.Property<int>("ExpirySquareOffTimeMinutes")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("FromDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("HedgeDistancePoints")
                         .HasColumnType("int");
 
+                    b.Property<bool>("HedgeEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("HedgePremiumPercentage")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("HedgeRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("HedgeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("InstrumentPrefix")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("bit");
@@ -231,13 +401,31 @@ namespace KiteConnectApi.Migrations
                     b.Property<DateTime?>("LastExitReentryTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("LockProfitAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("LockProfitPercentage")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("ManualExecutionTimeoutMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MaxDailyLoss")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MaxPositionSize")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("MaxTradesPerDay")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinReentryDelayMinutes")
                         .HasColumnType("int");
 
                     b.Property<decimal>("MoveStopLossToEntryPriceAmount")
@@ -245,6 +433,21 @@ namespace KiteConnectApi.Migrations
 
                     b.Property<decimal>("MoveStopLossToEntryPricePercentage")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("NotifyOnEntry")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyOnExit")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyOnProfit")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyOnStopLoss")
+                        .HasColumnType("bit");
 
                     b.Property<string>("OrderType")
                         .HasColumnType("nvarchar(max)");
@@ -282,6 +485,15 @@ namespace KiteConnectApi.Migrations
                     b.Property<string>("UnderlyingInstrument")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("UseDynamicQuantity")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseNearestWeeklyExpiry")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseOrderProtection")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.ToTable("NiftyOptionStrategyConfigs");
@@ -313,6 +525,223 @@ namespace KiteConnectApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NotificationPreferences");
+                });
+
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.OptionsHistoricalData", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("AskPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("BidAskSpread")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("BidPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DataSource")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("Delta")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<string>("Exchange")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("Gamma")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<decimal>("High")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ImpliedVolatility")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<string>("Interval")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("LastPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Low")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Open")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("OpenInterest")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OptionType")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<int>("Strike")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Theta")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TradingSymbol")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Underlying")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal?>("Vega")
+                        .HasColumnType("decimal(8,4)");
+
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Timestamp")
+                        .HasDatabaseName("IX_OptionsHistoricalData_Timestamp");
+
+                    b.HasIndex("TradingSymbol", "Timestamp")
+                        .HasDatabaseName("IX_OptionsHistoricalData_Symbol_Timestamp");
+
+                    b.HasIndex("Underlying", "Strike", "OptionType", "ExpiryDate")
+                        .HasDatabaseName("IX_OptionsHistoricalData_Underlying_Strike_Type_Expiry");
+
+                    b.ToTable("OptionsHistoricalData");
+                });
+
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.OptionsTradePosition", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("CurrentPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("EntryPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("EntryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExitOrderId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExitReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InstrumentToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsHedge")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("LockedProfitLevel")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MainPositionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("MaxLoss")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MaxProfit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("OptionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PnL")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("PnLPercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("ProfitLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Signal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("StopLossPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("StrategyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Strike")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TargetPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TradingSymbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TrailingStopLoss")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiryDate")
+                        .HasDatabaseName("IX_OptionsTradePosition_ExpiryDate");
+
+                    b.HasIndex("StrategyId", "Signal", "Status")
+                        .HasDatabaseName("IX_OptionsTradePosition_Strategy_Signal_Status");
+
+                    b.ToTable("OptionsTradePositions");
                 });
 
             modelBuilder.Entity("KiteConnectApi.Models.Trading.Order", b =>
@@ -370,6 +799,145 @@ namespace KiteConnectApi.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.PendingAlert", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AlertJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExecutedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExecutedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExecutionResult")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Index")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReceivedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Signal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("StrategyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Strike")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiryTime")
+                        .HasDatabaseName("IX_PendingAlert_ExpiryTime");
+
+                    b.HasIndex("StrategyId", "Status")
+                        .HasDatabaseName("IX_PendingAlert_Strategy_Status");
+
+                    b.ToTable("PendingAlerts");
+                });
+
+            modelBuilder.Entity("KiteConnectApi.Models.Trading.RiskManagementRule", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("ActionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ActionPercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastTriggered")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxTriggers")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RuleType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StrategyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("TriggerAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TriggerCondition")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TriggerCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TriggerPercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyId", "IsEnabled")
+                        .HasDatabaseName("IX_RiskManagementRule_Strategy_Enabled");
+
+                    b.ToTable("RiskManagementRules");
+                });
+
             modelBuilder.Entity("KiteConnectApi.Models.Trading.ScreenerCriteria", b =>
                 {
                     b.Property<string>("Id")
@@ -417,7 +985,6 @@ namespace KiteConnectApi.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -473,6 +1040,9 @@ namespace KiteConnectApi.Migrations
 
                     b.Property<DateTime?>("ExitTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("HedgeTradingSymbol")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("datetime2");
@@ -585,11 +1155,9 @@ namespace KiteConnectApi.Migrations
 
             modelBuilder.Entity("KiteConnectApi.Models.Trading.Strategy", b =>
                 {
-                    b.Navigation("BrokerLevelSettings")
-                        .IsRequired();
+                    b.Navigation("BrokerLevelSettings");
 
-                    b.Navigation("ExecutionSettings")
-                        .IsRequired();
+                    b.Navigation("ExecutionSettings");
 
                     b.Navigation("Legs");
                 });

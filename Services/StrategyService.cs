@@ -17,6 +17,7 @@ namespace KiteConnectApi.Services
         private readonly ILogger<StrategyService> _logger;
         private readonly NiftyOptionStrategyConfig _strategyConfig;
         private readonly RiskManagementService _riskManagementService;
+        private readonly OptionsTradeService _optionsTradeService;
 
         public StrategyService(
             IKiteConnectService kiteConnectService,
@@ -24,7 +25,8 @@ namespace KiteConnectApi.Services
             IOrderRepository orderRepository,
             ILogger<StrategyService> logger,
             IOptions<NiftyOptionStrategyConfig> strategyConfig,
-            RiskManagementService riskManagementService)
+            RiskManagementService riskManagementService,
+            OptionsTradeService optionsTradeService)
         {
             _kiteConnectService = kiteConnectService;
             _positionRepository = positionRepository;
@@ -32,11 +34,42 @@ namespace KiteConnectApi.Services
             _logger = logger;
             _strategyConfig = strategyConfig.Value;
             _riskManagementService = riskManagementService;
+            _optionsTradeService = optionsTradeService;
         }
 
         public async Task HandleTradingViewAlert(TradingViewAlert alert)
         {
             _logger.LogInformation("Handling TradingView Alert: {Action} for {Signal}", alert.Action, alert.Signal);
+
+            try
+            {
+                // Use the new OptionsTradeService for enhanced options trading
+                var success = await _optionsTradeService.ProcessOptionsAlertAsync(alert);
+                
+                if (!success)
+                {
+                    _logger.LogWarning("Failed to process options alert: {Alert}", System.Text.Json.JsonSerializer.Serialize(alert));
+                    
+                    // Fallback to legacy logic if needed
+                    await HandleLegacyAlert(alert);
+                }
+                else
+                {
+                    _logger.LogInformation("Successfully processed options alert: {Action} for {Signal}", alert.Action, alert.Signal);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling TradingView alert");
+                
+                // Fallback to legacy logic in case of errors
+                await HandleLegacyAlert(alert);
+            }
+        }
+
+        private async Task HandleLegacyAlert(TradingViewAlert alert)
+        {
+            _logger.LogInformation("Using legacy alert handling for: {Action} for {Signal}", alert.Action, alert.Signal);
 
             if (alert.Action?.ToUpper() == "ENTRY")
             {
@@ -160,14 +193,43 @@ namespace KiteConnectApi.Services
         public async Task ExitAllPositionsAsync()
         {
             _logger.LogWarning("Executing MANUAL EXIT for ALL open positions.");
-            var openPositions = await _positionRepository.GetOpenPositionsAsync();
-            foreach (var position in openPositions.ToList())
+            
+            // Use the new OptionsTradeService for enhanced position management
+            var success = await _optionsTradeService.SquareOffAllPositionsAsync();
+            
+            if (!success)
             {
-                if (position.PositionId != null)
+                _logger.LogWarning("OptionsTradeService failed to square off all positions, falling back to legacy method");
+                
+                // Fallback to legacy logic
+                var openPositions = await _positionRepository.GetOpenPositionsAsync();
+                foreach (var position in openPositions.ToList())
                 {
-                    await ExitPositionByIdAsync(position.PositionId);
+                    if (position.PositionId != null)
+                    {
+                        await ExitPositionByIdAsync(position.PositionId);
+                    }
                 }
             }
+        }
+
+        public async Task ExitStrategyPositionsAsync(string strategyId)
+        {
+            _logger.LogInformation("Executing MANUAL EXIT for strategy positions: {StrategyId}", strategyId);
+            
+            var success = await _optionsTradeService.SquareOffStrategyPositionsAsync(strategyId);
+            
+            if (!success)
+            {
+                _logger.LogWarning("Failed to square off strategy positions for {StrategyId}", strategyId);
+            }
+        }
+
+        public async Task<bool> ClosePositionAsync(string positionId, string exitReason)
+        {
+            _logger.LogInformation("Closing position {PositionId} with reason: {ExitReason}", positionId, exitReason);
+            
+            return await _optionsTradeService.ClosePositionAsync(positionId, exitReason);
         }
 
         private string GetNiftyWeeklyOptionSymbol(int strike, string optionType)

@@ -1,0 +1,278 @@
+using KiteConnect;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+
+namespace KiteConnectApi.Services
+{
+    /// <summary>
+    /// Service for handling Kite Connect API authentication
+    /// </summary>
+    public class KiteAuthenticationService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<KiteAuthenticationService> _logger;
+        private Kite? _kite;
+        private string? _accessToken;
+        private UserProfile? _userProfile;
+        private readonly string _tokensFilePath;
+
+        public KiteAuthenticationService(IConfiguration configuration, ILogger<KiteAuthenticationService> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+            _tokensFilePath = Path.Combine(Environment.CurrentDirectory, "kite_tokens.json");
+        }
+
+        /// <summary>
+        /// Get the login URL for Kite Connect
+        /// </summary>
+        public string GetLoginUrl()
+        {
+            var apiKey = _configuration["KiteConnect:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("KiteConnect ApiKey not configured");
+            }
+
+            var kite = new Kite(apiKey, Debug: false);
+            return kite.GetLoginURL();
+        }
+
+        /// <summary>
+        /// Generate session using request token
+        /// </summary>
+        public async Task<AuthenticationResult> GenerateSessionAsync(string requestToken)
+        {
+            try
+            {
+                var apiKey = _configuration["KiteConnect:ApiKey"];
+                var apiSecret = _configuration["KiteConnect:ApiSecret"];
+
+                if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
+                {
+                    return new AuthenticationResult
+                    {
+                        Success = false,
+                        Message = "KiteConnect API credentials not configured"
+                    };
+                }
+
+                _kite = new Kite(apiKey, Debug: false);
+                var user = _kite.GenerateSession(requestToken, apiSecret);
+
+                _accessToken = user.AccessToken;
+                _kite.SetAccessToken(_accessToken);
+
+                // Get user profile
+                var profile = _kite.GetUserProfile();
+                _userProfile = new UserProfile
+                {
+                    UserId = profile.UserId,
+                    UserName = profile.UserName,
+                    Email = profile.Email,
+                    UserType = profile.UserType,
+                    Broker = profile.Broker,
+                    Exchanges = profile.Exchanges,
+                    Products = profile.Products,
+                    OrderTypes = profile.OrderTypes
+                };
+
+                // Save tokens to file
+                await SaveTokensAsync(user.AccessToken, user.RefreshToken);
+
+                _logger.LogInformation("User authenticated successfully: {UserId}", _userProfile.UserId);
+
+                return new AuthenticationResult
+                {
+                    Success = true,
+                    UserId = _userProfile.UserId,
+                    UserName = _userProfile.UserName,
+                    AccessToken = _accessToken,
+                    Message = "Authentication successful"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Authentication failed");
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        /// <summary>
+        /// Check if user is authenticated
+        /// </summary>
+        public async Task<bool> IsAuthenticatedAsync()
+        {
+            try
+            {
+                if (_kite == null || string.IsNullOrEmpty(_accessToken))
+                {
+                    return await LoadSavedTokensAsync();
+                }
+
+                // Test the connection by fetching user margins
+                var margins = _kite.GetMargins();
+                return margins.Net != null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Authentication check failed");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get user profile
+        /// </summary>
+        public async Task<UserProfile> GetUserProfileAsync()
+        {
+            if (_userProfile == null)
+            {
+                if (!await IsAuthenticatedAsync())
+                {
+                    throw new InvalidOperationException("User not authenticated");
+                }
+                
+                // Load profile from saved tokens or API
+                if (_kite != null)
+                {
+                    var profile = _kite.GetProfile();
+                    _userProfile = new UserProfile
+                    {
+                        UserId = profile.UserId,
+                        UserName = profile.UserName,
+                        Email = profile.Email,
+                        UserType = profile.UserType,
+                        Broker = profile.Broker,
+                        Exchanges = profile.Exchanges,
+                        Products = profile.Products,
+                        OrderTypes = profile.OrderTypes
+                    };
+                }
+            }
+
+            return _userProfile ?? new UserProfile();
+        }
+
+        /// <summary>
+        /// Get authenticated Kite instance
+        /// </summary>
+        public Kite GetAuthenticatedKite()
+        {
+            if (_kite == null || string.IsNullOrEmpty(_accessToken))
+            {
+                throw new InvalidOperationException("Not authenticated. Please authenticate first.");
+            }
+            return _kite;
+        }
+
+        /// <summary>
+        /// Load saved tokens from file
+        /// </summary>
+        public async Task<bool> LoadSavedTokensAsync()
+        {
+            try
+            {
+                if (!File.Exists(_tokensFilePath))
+                {
+                    return false;
+                }
+
+                var json = await File.ReadAllTextAsync(_tokensFilePath);
+                var tokens = JsonSerializer.Deserialize<SavedTokens>(json);
+
+                if (tokens?.AccessToken == null)
+                {
+                    return false;
+                }
+
+                var apiKey = _configuration["KiteConnect:ApiKey"];
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    return false;
+                }
+
+                _kite = new Kite(apiKey, Debug: false);
+                _kite.SetAccessToken(tokens.AccessToken);
+                _accessToken = tokens.AccessToken;
+
+                // Test the connection
+                var margins = _kite.GetMargins();
+                if (margins.Net != null)
+                {
+                    _logger.LogInformation("Loaded saved tokens successfully");
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("Saved tokens are invalid");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load saved tokens");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Save tokens to file
+        /// </summary>
+        private async Task SaveTokensAsync(string accessToken, string refreshToken)
+        {
+            try
+            {
+                var tokens = new SavedTokens
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    SavedAt = DateTime.UtcNow
+                };
+
+                var json = JsonSerializer.Serialize(tokens, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(_tokensFilePath, json);
+                
+                _logger.LogInformation("Tokens saved successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save tokens");
+            }
+        }
+    }
+
+    // Supporting classes
+    public class AuthenticationResult
+    {
+        public bool Success { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class UserProfile
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string UserType { get; set; } = string.Empty;
+        public string Broker { get; set; } = string.Empty;
+        public string[] Exchanges { get; set; } = Array.Empty<string>();
+        public string[] Products { get; set; } = Array.Empty<string>();
+        public string[] OrderTypes { get; set; } = Array.Empty<string>();
+    }
+
+    public class SavedTokens
+    {
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime SavedAt { get; set; }
+    }
+}

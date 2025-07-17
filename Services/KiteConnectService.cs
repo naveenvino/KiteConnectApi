@@ -127,13 +127,66 @@ namespace KiteConnectApi.Services
             _logger.LogInformation($"Fetching quotes for {string.Join(", ", instruments)} from Kite API.");
             try
             {
+                // Validate instruments array
+                if (instruments == null || instruments.Length == 0)
+                    throw new ArgumentException("Instruments array cannot be null or empty", nameof(instruments));
+                
+                // Kite API v3 supports up to 500 instruments per request
+                if (instruments.Length > 500)
+                    throw new ArgumentException("Maximum 500 instruments allowed per request", nameof(instruments));
+
                 return await Task.Run(() => _kite.GetQuote(instruments));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error fetching quotes for {string.Join(", ", instruments)}.");
+                
+                // Check if it's a token expiry issue
+                if (ex.Message.Contains("token") || ex.Message.Contains("session"))
+                {
+                    _logger.LogWarning("Possible token expiry detected. Consider implementing token refresh.");
+                }
+                
                 throw;
             }
+        }
+
+        public async Task<bool> IsTokenValidAsync()
+        {
+            try
+            {
+                // Test token validity by making a simple API call
+                var profile = await Task.Run(() => _kite.GetProfile());
+                return true; // Simplified for now
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Token validation failed");
+                return false;
+            }
+        }
+
+        public async Task<Dictionary<string, Quote>> GetQuotesWithRetryAsync(string[] instruments, int maxRetries = 3)
+        {
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    return await GetQuotesAsync(instruments);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Quote fetch attempt {attempt} failed for {string.Join(", ", instruments)}");
+                    
+                    if (attempt == maxRetries)
+                        throw;
+                    
+                    // Wait before retry (exponential backoff)
+                    await Task.Delay(1000 * attempt);
+                }
+            }
+            
+            throw new Exception("Max retries exceeded for quote fetch");
         }
 
         public async Task<List<TradePosition>> GetPositionsAsync()
@@ -204,17 +257,43 @@ namespace KiteConnectApi.Services
         public async Task<Dictionary<string, dynamic>> PlaceOrderAsync(string? exchange, string? tradingsymbol, string? transaction_type, int quantity, string? product, string? order_type, decimal? price = null, decimal? trigger_price = null, decimal? limit_price = null, int? disclosed_quantity = null, string? validity = "DAY", string? tag = null, string? positionId = null)
         {
             _logger.LogInformation($"Placing order: {transaction_type} {quantity} of {tradingsymbol} on {exchange} as {order_type} order.");
+            
+            // Validate required parameters as per Kite API v3
+            if (string.IsNullOrEmpty(tradingsymbol))
+                throw new ArgumentException("Trading symbol is required", nameof(tradingsymbol));
+            if (string.IsNullOrEmpty(exchange))
+                throw new ArgumentException("Exchange is required", nameof(exchange));
+            if (string.IsNullOrEmpty(transaction_type))
+                throw new ArgumentException("Transaction type is required", nameof(transaction_type));
+            if (string.IsNullOrEmpty(product))
+                throw new ArgumentException("Product type is required", nameof(product));
+            if (string.IsNullOrEmpty(order_type))
+                throw new ArgumentException("Order type is required", nameof(order_type));
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than 0", nameof(quantity));
+
+            // Validate price parameters based on order type
+            if (order_type == "LIMIT" && (!price.HasValue || price <= 0))
+                throw new ArgumentException("Price is required for LIMIT orders", nameof(price));
+            if (order_type == "SL" && (!trigger_price.HasValue || trigger_price <= 0))
+                throw new ArgumentException("Trigger price is required for SL orders", nameof(trigger_price));
+
             try
             {
+                // Use correct parameter mapping as per Kite API v3
+                decimal? orderPrice = order_type == "LIMIT" ? price : null;
+                if (order_type == "SL" && price.HasValue)
+                    orderPrice = price; // For SL orders, price is the limit price after trigger
+
                 return await Task.Run(() => _kite.PlaceOrder(
                     Exchange: exchange,
                     TradingSymbol: tradingsymbol,
                     TransactionType: transaction_type,
                     Quantity: quantity,
-                    Price: limit_price, // Use limit_price for Price parameter
+                    Price: orderPrice, // Correct price parameter usage
                     Product: product,
                     OrderType: order_type,
-                    Validity: validity,
+                    Validity: validity ?? "DAY",
                     DisclosedQuantity: disclosed_quantity,
                     TriggerPrice: trigger_price,
                     Tag: tag
@@ -222,7 +301,7 @@ namespace KiteConnectApi.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error placing order: {transaction_type} {quantity} of {tradingsymbol}.");
+                _logger.LogError(ex, $"Error placing order: {transaction_type} {quantity} of {tradingsymbol}. Error: {ex.Message}");
                 throw;
             }
         }

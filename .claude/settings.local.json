@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet --version)",
+      "Bash(dotnet build)",
+      "Bash(dotnet build:*)",
+      "WebFetch(domain:kite.trade)",
+      "Bash(find:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet run:*)",
+      "Bash(curl:*)",
+      "Bash(mv:*)",
+      "Bash(dotnet list:*)",
+      "Bash(taskkill:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(timeout:*)",
+      "Bash(del:*)",
+      "Bash(rm:*)",
+      "Bash(echo $env:ASPNETCORE_ENVIRONMENT)",
+      "Bash(sqlcmd:*)",
+      "Bash(restart_app.bat)",
+      "Bash(cmd:*)",
+      "Bash(grep:*)",
+      "Bash(powershell:*)",
+      "Bash(start cmd /c \"dotnet run\")",
+      "Bash(./restart_app.bat)",
+      "Bash(python test:*)",
+      "Bash(Start-Process -WindowStyle Hidden -FilePath \"dotnet\" -ArgumentList \"run\" -PassThru)",
+      "Bash(tasklist:*)",
+      "Bash(wmic process where processid=31068 delete:*)",
+      "Bash(wmic process where:*)",
+      "Bash(python:*)",
+      "Bash(quick_nifty_test.bat)"
+    ],
+    "deny": []
+  }
+}
